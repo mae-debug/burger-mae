@@ -1,0 +1,3044 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAE BURGER — ERP Financiero</title>
+<style>
+/* ══ RESET & ROOT ══ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #E8A020;
+  --gold-l: #F5C060;
+  --gold-d: #B87810;
+  --red: #CC2929;
+  --black: #111111;
+  --surface: #1C1C1C;
+  --surface2: #242424;
+  --surface3: #2E2E2E;
+  --border: #383838;
+  --border-l: #484848;
+  --text: #F0F0F0;
+  --muted: #999999;
+  --dim: #606060;
+  --green: #28A745;
+  --green-l: #3DBA5A;
+  --blue: #2E86C1;
+  --blue-l: #4A9EE0;
+  --sidebar-w: 224px;
+  --topbar-h: 52px;
+}
+html, body { height: 100%; overflow: hidden; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--black); color: var(--text); display: flex; flex-direction: column; }
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-l); border-radius: 3px; }
+
+/* ══ TOPBAR ══ */
+#topbar {
+  height: var(--topbar-h); background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 16px; gap: 12px; flex-shrink: 0; z-index: 100;
+}
+.logo-text { font-size: 17px; font-weight: 800; color: var(--gold); letter-spacing: 0.5px; }
+.logo-sub { font-size: 10px; color: var(--red); font-weight: 700; background: rgba(204,41,41,.15); padding: 2px 7px; border-radius: 10px; }
+.topbar-sep { flex: 1; }
+.topbar-btn {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+  padding: 6px 13px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: inherit;
+  display: flex; align-items: center; gap: 5px; transition: all .15s;
+}
+.topbar-btn:hover { border-color: var(--gold); color: var(--gold); }
+.topbar-btn.primary { background: var(--gold); color: var(--black); border-color: var(--gold); font-weight: 700; }
+.topbar-btn.primary:hover { background: var(--gold-l); }
+
+/* ══ BODY LAYOUT ══ */
+#app { display: flex; flex: 1; overflow: hidden; }
+
+/* ══ SIDEBAR ══ */
+#sidebar {
+  width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0;
+}
+.nav-section {
+  font-size: 9.5px; font-weight: 700; color: var(--dim); letter-spacing: 1.8px;
+  text-transform: uppercase; padding: 16px 16px 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 16px;
+  cursor: pointer; color: var(--muted); font-size: 13px;
+  border-left: 3px solid transparent; transition: all .12s; position: relative;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--surface3); color: var(--gold); border-left-color: var(--gold); }
+.nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; font-size: 10px; font-weight: 700; padding: 1px 7px;
+  border-radius: 10px; font-family: monospace;
+}
+.nav-badge.ok { background: rgba(40,167,69,.2); color: var(--green-l); }
+.nav-badge.soon { background: var(--surface3); color: var(--dim); }
+.nav-divider { height: 1px; background: var(--border); margin: 6px 12px; }
+
+/* ══ MAIN ══ */
+#main { flex: 1; overflow-y: auto; padding: 24px; background: #151515; }
+
+/* ══ PAGES ══ */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ══ PAGE HEADER ══ */
+.page-header { margin-bottom: 22px; }
+.page-header h1 { font-size: 20px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
+.page-header .badge {
+  font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 12px;
+  background: rgba(232,160,32,.15); color: var(--gold); border: 1px solid rgba(232,160,32,.3);
+}
+.breadcrumb { font-size: 11px; color: var(--dim); margin-bottom: 5px; }
+
+/* ══ CARDS ══ */
+.kpi-row { display: grid; gap: 14px; margin-bottom: 20px; }
+.kpi-row.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.kpi-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.kpi-row.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.kpi-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px 18px; position: relative; overflow: hidden;
+}
+.kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--gold); }
+.kpi-card.red::before { background: var(--red); }
+.kpi-card.green::before { background: var(--green); }
+.kpi-card.blue::before { background: var(--blue); }
+.kpi-label { font-size: 10.5px; font-weight: 600; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 7px; }
+.kpi-value { font-family: 'Courier New', monospace; font-size: 22px; font-weight: 700; color: var(--gold); }
+.kpi-card.red .kpi-value { color: #E87070; }
+.kpi-card.green .kpi-value { color: var(--green-l); }
+.kpi-card.blue .kpi-value { color: var(--blue-l); }
+.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ══ TABLE WRAP ══ */
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+.table-toolbar {
+  display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
+}
+.table-title { font-size: 13px; font-weight: 600; }
+.t-search {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+  padding: 5px 11px; border-radius: 6px; font-family: inherit; font-size: 12px; outline: none;
+  width: 180px;
+}
+.t-search:focus { border-color: var(--gold); }
+.ml-auto { margin-left: auto; }
+.t-btn {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+  padding: 5px 12px; border-radius: 6px; cursor: pointer; font-family: inherit;
+  font-size: 12px; transition: all .12s; display: flex; align-items: center; gap: 5px;
+}
+.t-btn:hover { border-color: var(--gold); color: var(--gold); }
+.t-btn.primary { background: var(--gold); color: var(--black); border-color: var(--gold); font-weight: 700; }
+.t-btn.primary:hover { background: var(--gold-l); }
+.t-btn.danger { border-color: var(--red); color: var(--red); }
+.t-btn.danger:hover { background: rgba(204,41,41,.12); }
+.table-scroll { overflow-x: auto; max-height: 480px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  background: var(--surface2); padding: 9px 12px; text-align: left;
+  font-size: 10.5px; font-weight: 700; color: var(--dim); text-transform: uppercase;
+  letter-spacing: .7px; white-space: nowrap; position: sticky; top: 0; z-index: 2;
+  border-bottom: 1px solid var(--border);
+}
+tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+tbody tr:hover { background: var(--surface2); }
+tbody tr:last-child { border-bottom: none; }
+td { padding: 9px 12px; vertical-align: middle; }
+td.mono { font-family: 'Courier New', monospace; font-size: 12px; }
+td.gold { font-family: 'Courier New', monospace; color: var(--gold); font-weight: 600; }
+td.dim { color: var(--muted); font-size: 12px; }
+td.red-val { color: #E87070; font-family: 'Courier New', monospace; }
+tfoot td {
+  background: var(--surface3); font-weight: 700; font-family: 'Courier New', monospace;
+  border-top: 2px solid var(--border-l); position: sticky; bottom: 0;
+  color: var(--gold); font-size: 13px; padding: 10px 12px;
+}
+.table-info { padding: 7px 14px; font-size: 11px; color: var(--dim); border-top: 1px solid var(--border); }
+
+/* ══ BADGES ══ */
+.zona-badge {
+  display: inline-block; padding: 2px 9px; border-radius: 4px;
+  font-size: 11px; font-weight: 600;
+}
+.z-fachada { background: rgba(232,160,32,.15); color: var(--gold); }
+.z-cocina { background: rgba(204,41,41,.15); color: #E87070; }
+.z-principal { background: rgba(0,188,212,.15); color: #4DD0E1; }
+.z-almacen { background: rgba(74,158,255,.15); color: #74BEFF; }
+.z-cobranza { background: rgba(40,167,69,.15); color: var(--green-l); }
+.z-banos { background: rgba(156,39,176,.15); color: #CE93D8; }
+.z-oficina { background: rgba(255,152,0,.15); color: #FFB74D; }
+
+/* ══ SECTION TITLE ══ */
+.section-title {
+  font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 12px; margin-top: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ══ MODAL ══ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75);
+  z-index: 1000; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border-l); border-radius: 12px;
+  padding: 24px; width: 500px; max-width: 95vw; max-height: 85vh; overflow-y: auto;
+}
+.modal h2 { font-size: 15px; font-weight: 700; color: var(--gold); margin-bottom: 18px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: 10.5px; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: .7px; }
+.form-group input, .form-group select, .form-group textarea {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+  padding: 8px 11px; border-radius: 6px; font-family: inherit; font-size: 13px; outline: none;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--gold); }
+.form-group input[readonly] { background: var(--surface3); color: var(--gold); font-family: 'Courier New', monospace; }
+.form-actions { display: flex; gap: 10px; margin-top: 20px; }
+.btn { padding: 9px 20px; border-radius: 7px; border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; transition: all .12s; }
+.btn.primary { background: var(--gold); color: var(--black); }
+.btn.primary:hover { background: var(--gold-l); }
+.btn.secondary { background: var(--surface3); color: var(--text); border: 1px solid var(--border); }
+.btn.secondary:hover { border-color: var(--gold); }
+
+/* ══ TOAST ══ */
+#toast-wrap { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 11px 16px; font-size: 13px; min-width: 260px;
+  animation: toastIn .25s ease; display: flex; align-items: center; gap: 10px;
+}
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error { border-left: 3px solid var(--red); }
+.toast.info { border-left: 3px solid var(--gold); }
+@keyframes toastIn { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* ══ TABS ══ */
+.tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+.tab { padding: 9px 18px; font-size: 13px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .12s; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* ══ PROGRESS BARS ══ */
+.prog-item { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+.prog-label { font-size: 12px; color: var(--muted); min-width: 170px; }
+.prog-bar-wrap { flex: 1; height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+.prog-bar { height: 100%; border-radius: 3px; transition: width .6s ease; }
+.prog-val { font-family: 'Courier New', monospace; font-size: 11px; color: var(--dim); min-width: 34px; text-align: right; }
+
+/* ══ COMING SOON ══ */
+.coming-soon {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 80px 20px; text-align: center;
+}
+.coming-soon .cs-icon { font-size: 56px; margin-bottom: 16px; }
+.coming-soon h2 { font-size: 20px; color: var(--gold); margin-bottom: 8px; }
+.coming-soon p { font-size: 13px; color: var(--muted); max-width: 400px; }
+
+/* ══ UTIL ══ */
+.mt-0 { margin-top: 0 !important; }
+.flex-gap { display: flex; gap: 10px; }
+</style>
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<div id="topbar">
+  <span class="logo-text">MAE BURGER</span>
+  <span class="logo-sub">ERP v1 · Fase 1</span>
+  <div class="topbar-sep"></div>
+  <button class="topbar-btn" onclick="window.print()">🖨 Imprimir</button>
+  <button class="topbar-btn primary" onclick="showToast('ERP listo — sin errores de consola ✅','success')">✅ Estado</button>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+
+  <!-- ══ SIDEBAR ══ -->
+  <nav id="sidebar">
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+      <span class="nav-badge ok">OK</span>
+    </div>
+
+    <div class="nav-section">Inversión Inicial</div>
+    <div class="nav-item" id="nav-tangibles" onclick="showPage('tangibles')">
+      <span class="nav-icon">📦</span> Activos Tangibles
+      <span class="nav-badge ok">OK</span>
+    </div>
+    <div class="nav-item" id="nav-intangibles" onclick="showPage('intangibles')">
+      <span class="nav-icon">📄</span> Activos Intangibles
+      <span class="nav-badge ok">OK</span>
+    </div>
+
+    <div class="nav-section">Recursos Humanos</div>
+    <div class="nav-item" id="nav-planilla" onclick="showPage('planilla')">
+      <span class="nav-icon">👷</span> Planilla Laboral
+      <span class="nav-badge ok">OK</span>
+    </div>
+
+    <div class="nav-section">Financiero</div>
+    <div class="nav-item" id="nav-financiamiento" onclick="showPage('financiamiento')">
+      <span class="nav-icon">🏦</span> Financiamiento
+      <span class="nav-badge ok">OK</span>
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section">Próximamente</div>
+    <div class="nav-item" id="nav-esf" onclick="showPage('esf')">
+      <span class="nav-icon">⚖️</span> ESF / Balance
+      <span class="nav-badge soon">Fase 2</span>
+    </div>
+    <div class="nav-item" id="nav-ecommerce" onclick="showPage('ecommerce')">
+      <span class="nav-icon">🛒</span> Ecommerce + POS
+      <span class="nav-badge soon">Fase 2</span>
+    </div>
+    <div class="nav-item" id="nav-inventario" onclick="showPage('inventario')">
+      <span class="nav-icon">📦</span> Inventario
+      <span class="nav-badge soon">Fase 2</span>
+    </div>
+    <div class="nav-item" id="nav-facturacion" onclick="showPage('facturacion')">
+      <span class="nav-icon">🧾</span> Facturación
+      <span class="nav-badge soon">Fase 2</span>
+    </div>
+    <div class="nav-item" id="nav-eerr" onclick="showPage('eerr')">
+      <span class="nav-icon">📈</span> EERR + Flujo
+      <span class="nav-badge soon">Fase 2</span>
+    </div>
+    <div class="nav-item" id="nav-kpis" onclick="showPage('kpis')">
+      <span class="nav-icon">🎯</span> KPIs
+      <span class="nav-badge soon">Fase 2</span>
+    </div>
+  </nav>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main id="main">
+
+    <!-- ════════════════════════════
+         DASHBOARD
+    ════════════════════════════ -->
+    <div id="page-dashboard" class="page active">
+      <div class="breadcrumb">MAE BURGER ERP · Fase 1</div>
+      <div class="page-header">
+        <h1>📊 Dashboard General <span class="badge">Fase 1 — Estructura Base</span></h1>
+      </div>
+
+      <div class="kpi-row cols-4">
+        <div class="kpi-card">
+          <div class="kpi-label">Inversión Total</div>
+          <div class="kpi-value" id="kpi-inversion">S/ 114,899</div>
+          <div class="kpi-sub">Capital propio + préstamo</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Aporte Propio</div>
+          <div class="kpi-value">S/ 80,429</div>
+          <div class="kpi-sub">70% de la inversión</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Préstamo Banco</div>
+          <div class="kpi-value">S/ 34,470</div>
+          <div class="kpi-sub">30% · 36 meses · 12%</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Capital de Trabajo</div>
+          <div class="kpi-value">S/ 26,025</div>
+          <div class="kpi-sub">Mes 1 operaciones</div>
+        </div>
+      </div>
+
+      <div class="kpi-row cols-3">
+        <div class="kpi-card">
+          <div class="kpi-label">Activos Tangibles</div>
+          <div class="kpi-value" id="dash-tang">S/ 86,810</div>
+          <div class="kpi-sub" id="dash-tang-items">89 ítems · 7 zonas</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Activos Intangibles</div>
+          <div class="kpi-value" id="dash-intang">S/ 2,064</div>
+          <div class="kpi-sub" id="dash-intang-items">10 conceptos</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Planilla Mensual</div>
+          <div class="kpi-value" id="dash-planilla">S/ 11,225</div>
+          <div class="kpi-sub">8 trabajadores · 6 puestos</div>
+        </div>
+      </div>
+
+      <div class="section-title">Módulos del ERP</div>
+      <div class="table-wrap">
+        <div style="padding: 18px;" id="modulos-progress"></div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════
+         ACTIVOS TANGIBLES
+    ════════════════════════════ -->
+    <div id="page-tangibles" class="page">
+      <div class="breadcrumb">Inversión Inicial</div>
+      <div class="page-header">
+        <h1>📦 Activos Tangibles <span class="badge" id="badge-tang">89 ítems</span></h1>
+      </div>
+
+      <div class="kpi-row cols-4">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Tangibles</div>
+          <div class="kpi-value" id="tang-kpi-total">S/ 0</div>
+          <div class="kpi-sub" id="tang-kpi-items">0 ítems</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Dep. Anual</div>
+          <div class="kpi-value" id="tang-kpi-dep-a">S/ 0</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Dep. Mensual</div>
+          <div class="kpi-value" id="tang-kpi-dep-m">S/ 0</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Valor Neto</div>
+          <div class="kpi-value" id="tang-kpi-neto">S/ 0</div>
+          <div class="kpi-sub">Después año 1</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <span class="table-title">Inventario de Activos Físicos</span>
+          <input class="t-search" id="tang-search" placeholder="🔍 Buscar..." oninput="filterTangibles()">
+          <select id="tang-zona-filter" class="t-search" style="width:140px" onchange="filterTangibles()">
+            <option value="">Todas las zonas</option>
+            <option>Fachada</option><option>Área Principal</option><option>Cocina</option>
+            <option>Almacén</option><option>Cobranza</option><option>Baños</option><option>Oficina</option>
+          </select>
+          <div class="ml-auto flex-gap">
+            <button class="t-btn primary" onclick="openTangModal()">➕ Agregar</button>
+            <button class="t-btn" onclick="exportTangCSV()">📤 CSV</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Zona</th><th>Producto</th><th>Cant.</th>
+                <th>P. Unit (S/)</th><th>Total (S/)</th><th>Vida útil</th>
+                <th>Dep. Anual</th><th>Dep. Mensual</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tang-tbody"></tbody>
+            <tfoot id="tang-tfoot"></tfoot>
+          </table>
+        </div>
+        <div class="table-info" id="tang-info">0 registros</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════
+         ACTIVOS INTANGIBLES
+    ════════════════════════════ -->
+    <div id="page-intangibles" class="page">
+      <div class="breadcrumb">Inversión Inicial</div>
+      <div class="page-header">
+        <h1>📄 Activos Intangibles <span class="badge" id="badge-intang">10 conceptos</span></h1>
+      </div>
+
+      <div class="kpi-row cols-3">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Intangibles</div>
+          <div class="kpi-value" id="intang-kpi-total">S/ 0</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Amort. Anual</div>
+          <div class="kpi-value" id="intang-kpi-amort-a">S/ 0</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Amort. Mensual</div>
+          <div class="kpi-value" id="intang-kpi-amort-m">S/ 0</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <span class="table-title">Licencias y Gastos Preoperativos</span>
+          <div class="ml-auto flex-gap">
+            <button class="t-btn primary" onclick="openIntangModal()">➕ Agregar</button>
+            <button class="t-btn" onclick="exportIntangCSV()">📤 CSV</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Concepto</th><th>Cant.</th><th>P. Unit (S/)</th>
+                <th>Total (S/)</th><th>Vida útil</th><th>Amort. Anual</th>
+                <th>Amort. Mensual</th><th>Entidad</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="intang-tbody"></tbody>
+            <tfoot id="intang-tfoot"></tfoot>
+          </table>
+        </div>
+        <div class="table-info" id="intang-info">0 registros</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════
+         PLANILLA
+    ════════════════════════════ -->
+    <div id="page-planilla" class="page">
+      <div class="breadcrumb">Recursos Humanos</div>
+      <div class="page-header">
+        <h1>👷 Planilla Laboral <span class="badge">Régimen MYPE</span></h1>
+      </div>
+
+      <div class="kpi-row cols-4">
+        <div class="kpi-card">
+          <div class="kpi-label">Planilla Bruta/mes</div>
+          <div class="kpi-value" id="plan-kpi-bruta">S/ 0</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Costo Total/mes</div>
+          <div class="kpi-value" id="plan-kpi-total">S/ 0</div>
+          <div class="kpi-sub">Incl. todos los beneficios</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Costo Anual</div>
+          <div class="kpi-value" id="plan-kpi-anual">S/ 0</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Essalud/mes</div>
+          <div class="kpi-value" id="plan-kpi-essalud">S/ 0</div>
+          <div class="kpi-sub">9% sobre planilla</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <span class="table-title">Detalle por Puesto — Régimen MYPE</span>
+          <div class="ml-auto flex-gap">
+            <button class="t-btn primary" onclick="openPlanModal()">➕ Agregar puesto</button>
+            <button class="t-btn" onclick="exportPlanCSV()">📤 CSV</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Puesto</th><th>Cant.</th><th>Sueldo Unit.</th>
+                <th>Sueldo Total</th><th>Essalud 9%</th><th>Gratif./mes</th>
+                <th>CTS/mes</th><th>Vacac./mes</th><th>Costo Total/mes</th>
+                <th>Costo Anual</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="plan-tbody"></tbody>
+            <tfoot id="plan-tfoot"></tfoot>
+          </table>
+        </div>
+        <div class="table-info" id="plan-info">0 registros</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════
+         FINANCIAMIENTO
+    ════════════════════════════ -->
+    <div id="page-financiamiento" class="page">
+      <div class="breadcrumb">Financiero</div>
+      <div class="page-header">
+        <h1>🏦 Financiamiento <span class="badge">Método Francés</span></h1>
+      </div>
+
+      <div class="kpi-row cols-4">
+        <div class="kpi-card green">
+          <div class="kpi-label">Aporte Propio</div>
+          <div class="kpi-value" id="fin-kpi-propio">S/ 80,429</div>
+          <div class="kpi-sub">70% inversión total</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Monto Préstamo</div>
+          <div class="kpi-value" id="fin-kpi-prestamo">S/ 0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Cuota Mensual</div>
+          <div class="kpi-value" id="fin-kpi-cuota">S/ 0</div>
+          <div class="kpi-sub">Fórmula francesa</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Total Intereses</div>
+          <div class="kpi-value" id="fin-kpi-intereses">S/ 0</div>
+        </div>
+      </div>
+
+      <!-- Parámetros -->
+      <div class="table-wrap">
+        <div class="table-toolbar"><span class="table-title">⚙️ Parámetros del Préstamo</span></div>
+        <div style="padding:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+          <div class="form-group">
+            <label>Monto préstamo (S/)</label>
+            <input type="number" id="fin-monto" value="34470" oninput="calcAmortizacion()">
+          </div>
+          <div class="form-group">
+            <label>Tasa anual (%)</label>
+            <input type="number" id="fin-tasa" value="12" step="0.1" oninput="calcAmortizacion()">
+          </div>
+          <div class="form-group">
+            <label>Plazo (meses)</label>
+            <input type="number" id="fin-plazo" value="36" oninput="calcAmortizacion()">
+          </div>
+          <div class="form-group">
+            <label>Cuota calculada</label>
+            <input type="text" id="fin-cuota-display" readonly>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla amortización -->
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <span class="table-title">Tabla de Amortización Completa</span>
+          <div class="ml-auto flex-gap">
+            <button class="t-btn" onclick="exportAmortCSV()">📤 CSV</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>N°</th><th>Mes</th><th>Saldo Inicial</th>
+                <th>Capital</th><th>Interés</th><th>Cuota</th><th>Saldo Final</th>
+              </tr>
+            </thead>
+            <tbody id="amort-tbody"></tbody>
+            <tfoot id="amort-tfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════ PÁGINAS PRÓXIMAMENTE ════════════ -->
+    <div id="page-esf" class="page">
+      <div class="breadcrumb">Financiero</div>
+      <div class="page-header">
+        <h1>⚖️ ESF — Estado de Situación Financiera <span class="badge" id="esf-badge">Verificando...</span></h1>
+      </div>
+      <div id="esf-alert" style="display:none;padding:13px 18px;border-radius:8px;margin-bottom:18px;font-weight:600;font-size:13px"></div>
+      <div class="kpi-row cols-3">
+        <div class="kpi-card green"><div class="kpi-label">TOTAL ACTIVO</div><div class="kpi-value" id="esf-kpi-activo">S/ 0</div></div>
+        <div class="kpi-card red"><div class="kpi-label">TOTAL PASIVO</div><div class="kpi-value" id="esf-kpi-pasivo">S/ 0</div></div>
+        <div class="kpi-card blue"><div class="kpi-label">TOTAL PATRIMONIO</div><div class="kpi-value" id="esf-kpi-pat">S/ 0</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div class="table-wrap">
+          <div class="table-toolbar"><span class="table-title">ACTIVO</span></div>
+          <div class="table-scroll">
+            <table><thead><tr><th>Concepto</th><th>Monto (S/)</th></tr></thead>
+            <tbody id="esf-activo-tbody"></tbody>
+            <tfoot id="esf-activo-tfoot"></tfoot></table>
+          </div>
+        </div>
+        <div>
+          <div class="table-wrap" style="margin-bottom:16px">
+            <div class="table-toolbar"><span class="table-title">PASIVO</span></div>
+            <div class="table-scroll">
+              <table><thead><tr><th>Concepto</th><th>Monto (S/)</th></tr></thead>
+              <tbody id="esf-pasivo-tbody"></tbody>
+              <tfoot id="esf-pasivo-tfoot"></tfoot></table>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <div class="table-toolbar"><span class="table-title">PATRIMONIO</span></div>
+            <div class="table-scroll">
+              <table><thead><tr><th>Concepto</th><th>Monto (S/)</th></tr></thead>
+              <tbody id="esf-pat-tbody"></tbody>
+              <tfoot id="esf-pat-tfoot"></tfoot></table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:16px">
+        <button class="t-btn primary" onclick="renderESF()">🔍 Verificar Balance</button>
+        <button class="t-btn" style="margin-left:10px" onclick="exportESFCSV()">📤 CSV</button>
+      </div>
+    </div>
+    <div id="page-ecommerce" class="page">
+      <div class="breadcrumb">Ventas</div>
+      <div class="page-header">
+        <h1>🛒 Ecommerce + POS <span class="badge">Punto de Venta</span></h1>
+      </div>
+      <div class="tabs">
+        <div class="tab active" id="ec-tab-pos" onclick="ecTab('pos')">🖥 Caja / POS</div>
+        <div class="tab" id="ec-tab-catalogo" onclick="ecTab('catalogo')">📋 Catálogo</div>
+        <div class="tab" id="ec-tab-historial" onclick="ecTab('historial')">📜 Historial</div>
+      </div>
+
+      <!-- POS -->
+      <div id="ec-pos">
+        <div style="display:grid;grid-template-columns:1fr 360px;gap:18px">
+          <div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px" id="pos-grid"></div>
+            <input class="t-search" style="width:100%;margin-bottom:10px" placeholder="🔍 Buscar producto..." oninput="posSearch(this.value)">
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+              <button class="t-btn" id="pay-efectivo" onclick="setPago('efectivo')" style="flex:1;border-color:var(--gold);color:var(--gold)">💵 Efectivo</button>
+              <button class="t-btn" id="pay-tarjeta" onclick="setPago('tarjeta')" style="flex:1">💳 Tarjeta</button>
+              <button class="t-btn" id="pay-yape" onclick="setPago('yape')" style="flex:1">📱 Yape/Plin</button>
+            </div>
+          </div>
+          <div>
+            <div class="table-wrap" style="margin-bottom:10px">
+              <div class="table-toolbar"><span class="table-title">🛒 Carrito</span><button class="t-btn danger" style="margin-left:auto;padding:3px 10px;font-size:11px" onclick="clearCart()">🗑 Vaciar</button></div>
+              <div id="cart-items" style="min-height:180px;max-height:300px;overflow-y:auto;padding:8px"></div>
+              <div style="padding:10px 14px;border-top:1px solid var(--border)">
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:var(--muted)">Subtotal</span><span class="mono" id="cart-sub">S/ 0.00</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:var(--muted)">IGV 18%</span><span class="mono" style="color:#E87070" id="cart-igv">S/ 0.00</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding-top:8px;border-top:1px solid var(--border);margin-top:6px"><span style="color:var(--gold)">TOTAL</span><span class="mono" style="color:var(--gold)" id="cart-total">S/ 0.00</span></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <div class="form-group" style="flex:1"><label>Recibido (S/)</label><input type="number" id="pos-recibido" placeholder="0.00" oninput="calcVuelto()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-family:monospace;width:100%"></div>
+              <div class="form-group" style="flex:1"><label>Vuelto (S/)</label><input type="text" id="pos-vuelto" readonly style="background:var(--surface3);border:1px solid var(--border);color:var(--green-l);padding:7px 10px;border-radius:6px;font-family:monospace;width:100%;font-weight:700"></div>
+            </div>
+            <button class="btn primary" style="width:100%;padding:13px;font-size:14px;margin-bottom:7px" onclick="procesarVenta()">✅ PROCESAR VENTA</button>
+            <button class="btn secondary" style="width:100%" onclick="imprimirTicket()">🖨 Imprimir Ticket</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATÁLOGO -->
+      <div id="ec-catalogo" style="display:none">
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <span class="table-title">Catálogo de Productos</span>
+            <div class="ml-auto flex-gap">
+              <button class="t-btn primary" onclick="openProdModal()">➕ Nuevo</button>
+              <button class="t-btn" onclick="exportProdCSV()">📤 CSV</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table><thead><tr><th>#</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>IGV</th><th>P+IGV</th><th>Costo</th><th>Margen</th><th>Acciones</th></tr></thead>
+            <tbody id="prod-tbody"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIAL -->
+      <div id="ec-historial" style="display:none">
+        <div class="kpi-row cols-4">
+          <div class="kpi-card"><div class="kpi-label">Ventas Hoy</div><div class="kpi-value" id="h-total">S/ 0</div></div>
+          <div class="kpi-card green"><div class="kpi-label">Transacciones</div><div class="kpi-value" id="h-tx">0</div></div>
+          <div class="kpi-card blue"><div class="kpi-label">Ticket Promedio</div><div class="kpi-value" id="h-avg">S/ 0</div></div>
+          <div class="kpi-card red"><div class="kpi-label">IGV Recaudado</div><div class="kpi-value" id="h-igv">S/ 0</div></div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-toolbar"><span class="table-title">Historial de Ventas</span><button class="t-btn ml-auto" onclick="exportVentasCSV()">📤 CSV</button></div>
+          <div class="table-scroll">
+            <table><thead><tr><th>N°</th><th>Hora</th><th>Productos</th><th>Subtotal</th><th>IGV</th><th>Total</th><th>Pago</th></tr></thead>
+            <tbody id="ventas-tbody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal producto -->
+    <div id="modal-prod" class="modal-overlay">
+      <div class="modal">
+        <h2 id="modal-prod-title">➕ Nuevo Producto</h2>
+        <div class="form-row single"><div class="form-group"><label>Nombre *</label><input type="text" id="prod-m-nombre" placeholder="Ej: Mae Burger Clásica"></div></div>
+        <div class="form-row">
+          <div class="form-group"><label>Categoría</label><select id="prod-m-cat"><option>Hamburguesas</option><option>Acompañamientos</option><option>Bebidas</option><option>Combos</option><option>Otros</option></select></div>
+          <div class="form-group"><label>Emoji</label><input type="text" id="prod-m-emoji" value="🍔" maxlength="2"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Precio (S/) *</label><input type="number" id="prod-m-precio" value="15" min="0" oninput="recalcProdModal()"></div>
+          <div class="form-group"><label>Costo (S/)</label><input type="number" id="prod-m-costo" value="6" min="0" oninput="recalcProdModal()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Margen %</label><input type="text" id="prod-m-margen" readonly></div>
+          <div class="form-group"><label>IGV incluido</label><input type="text" id="prod-m-igv" readonly></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" onclick="saveProducto()">💾 Guardar</button>
+          <button class="btn secondary" onclick="closeModal('modal-prod')">Cancelar</button>
+        </div>
+      </div>
+    </div>
+    <div id="page-inventario" class="page">
+      <div class="breadcrumb">Operaciones</div>
+      <div class="page-header">
+        <h1>📦 Inventario / Kardex <span class="badge">Control de Stock</span></h1>
+      </div>
+      <div class="kpi-row cols-4">
+        <div class="kpi-card"><div class="kpi-label">Total Insumos</div><div class="kpi-value" id="inv-kpi-items">0</div></div>
+        <div class="kpi-card red"><div class="kpi-label">Alertas Stock Bajo</div><div class="kpi-value" id="inv-kpi-alertas">0</div></div>
+        <div class="kpi-card green"><div class="kpi-label">Valor Total Stock</div><div class="kpi-value" id="inv-kpi-valor">S/ 0</div></div>
+        <div class="kpi-card blue"><div class="kpi-label">Movimientos Hoy</div><div class="kpi-value" id="inv-kpi-movs">0</div></div>
+      </div>
+      <div class="tabs">
+        <div class="tab active" id="inv-tab-stock" onclick="invTab('stock')">📋 Stock Actual</div>
+        <div class="tab" id="inv-tab-movs" onclick="invTab('movs')">🔄 Movimientos</div>
+        <div class="tab" id="inv-tab-alertas" onclick="invTab('alertas')">🔴 Alertas</div>
+      </div>
+      <div id="inv-stock">
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <span class="table-title">Inventario de Insumos</span>
+            <input class="t-search" placeholder="🔍 Buscar..." oninput="filterInventario(this.value)">
+            <div class="ml-auto flex-gap">
+              <button class="t-btn primary" onclick="openInvModal('entrada')">📥 Entrada</button>
+              <button class="t-btn" onclick="openInvModal('salida')">📤 Salida</button>
+              <button class="t-btn" onclick="exportInvCSV()">📊 CSV</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>#</th><th>Insumo</th><th>Categoría</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>Máx.</th><th>Costo Unit.</th><th>Valor</th><th>Estado</th></tr></thead>
+              <tbody id="inv-tbody"></tbody>
+              <tfoot id="inv-tfoot"></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="inv-movs" style="display:none">
+        <div class="table-wrap">
+          <div class="table-toolbar"><span class="table-title">Historial de Movimientos</span></div>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>#</th><th>Hora</th><th>Insumo</th><th>Tipo</th><th>Cantidad</th><th>Saldo Ant.</th><th>Saldo Nuevo</th><th>Motivo</th></tr></thead>
+              <tbody id="inv-movs-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="inv-alertas" style="display:none">
+        <div id="inv-alertas-list"></div>
+      </div>
+    </div>
+    <div id="page-facturacion" class="page">
+      <div class="breadcrumb">Financiero</div>
+      <div class="page-header">
+        <h1>🧾 Facturación SUNAT <span class="badge">Régimen MYPE</span></h1>
+      </div>
+      <div class="tabs">
+        <div class="tab active" id="fac-tab-nueva" onclick="facTab('nueva')">➕ Nueva</div>
+        <div class="tab" id="fac-tab-listado" onclick="facTab('listado')">📋 Listado</div>
+        <div class="tab" id="fac-tab-sunat" onclick="facTab('sunat')">🔴 Obligaciones SUNAT</div>
+      </div>
+      <div id="fac-nueva">
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:18px">
+          <div class="table-wrap" style="padding:18px">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Tipo de comprobante</label>
+                <select id="fac-tipo" onchange="updateFacNum()">
+                  <option value="boleta">Boleta de Venta</option>
+                  <option value="factura">Factura</option>
+                </select>
+              </div>
+              <div class="form-group"><label>N° Comprobante</label><input type="text" id="fac-num" readonly></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Fecha</label><input type="date" id="fac-fecha"></div>
+              <div class="form-group"><label>Cliente / Razón Social</label><input type="text" id="fac-cliente" value="Consumidor Final"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>RUC / DNI</label><input type="text" id="fac-ruc" value="00000000"></div>
+              <div class="form-group"><label>Dirección</label><input type="text" id="fac-dir" value="—"></div>
+            </div>
+            <div class="section-title mt-0" style="margin-top:12px">Ítems del comprobante</div>
+            <div class="table-scroll" style="max-height:220px">
+              <table>
+                <thead><tr><th>#</th><th>Descripción</th><th>Cant.</th><th>P. Unit.</th><th>Desc%</th><th>Total</th><th></th></tr></thead>
+                <tbody id="fac-items-tbody"></tbody>
+              </table>
+            </div>
+            <button class="t-btn" style="margin-top:10px" onclick="addFacItem()">➕ Agregar ítem</button>
+            <div style="text-align:right;margin-top:14px;font-family:monospace;line-height:2">
+              <span style="color:var(--muted)">OP. GRAVADA: </span><span id="fac-sub">S/ 0.00</span><br>
+              <span style="color:var(--muted)">IGV (18%): </span><span id="fac-igv" style="color:#E87070">S/ 0.00</span><br>
+              <span style="color:var(--gold);font-weight:700;font-size:16px">TOTAL: <span id="fac-total">S/ 0.00</span></span>
+            </div>
+            <div class="form-actions">
+              <button class="btn primary" onclick="emitirComprobante()">✅ Emitir Comprobante</button>
+              <button class="btn secondary" onclick="window.print()">🖨 Imprimir</button>
+            </div>
+          </div>
+          <div class="table-wrap" style="padding:16px">
+            <div style="font-size:11px;font-weight:700;color:var(--dim);letter-spacing:1.5px;margin-bottom:12px">VISTA PREVIA</div>
+            <div id="fac-preview" style="font-family:'Courier New',monospace;font-size:11px;background:white;color:#111;padding:14px;border-radius:6px;line-height:1.8;white-space:pre"></div>
+          </div>
+        </div>
+      </div>
+      <div id="fac-listado" style="display:none">
+        <div class="kpi-row cols-4">
+          <div class="kpi-card"><div class="kpi-label">Total Emitido</div><div class="kpi-value" id="fac-kpi-total">S/ 0</div></div>
+          <div class="kpi-card green"><div class="kpi-label">Boletas</div><div class="kpi-value" id="fac-kpi-boletas">0</div></div>
+          <div class="kpi-card blue"><div class="kpi-label">Facturas</div><div class="kpi-value" id="fac-kpi-facturas">0</div></div>
+          <div class="kpi-card red"><div class="kpi-label">IGV Total</div><div class="kpi-value" id="fac-kpi-igv">S/ 0</div></div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <span class="table-title">Comprobantes Emitidos</span>
+            <div class="ml-auto"><button class="t-btn" onclick="exportFacCSV()">📤 CSV</button></div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>N°</th><th>Tipo</th><th>Comprobante</th><th>Fecha</th><th>Cliente</th><th>Subtotal</th><th>IGV</th><th>Total</th><th>Estado</th></tr></thead>
+              <tbody id="fac-listado-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="fac-sunat" style="display:none">
+        <div class="table-wrap" style="padding:18px;margin-bottom:16px">
+          <div class="section-title mt-0">Régimen MYPE Tributario — Obligaciones</div>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Impuesto</th><th>Base</th><th>Tasa</th><th>Periodicidad</th><th>Vencimiento aprox.</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:600">IGV</td><td>Ventas gravadas</td><td class="mono">18%</td><td>Mensual</td><td>Según cronograma SUNAT</td></tr>
+                <tr><td style="font-weight:600">Imp. a la Renta</td><td>Utilidad neta</td><td class="mono">10% hasta 15 UIT / 29.5% resto</td><td>Mensual (pago a cta.)</td><td>Cronograma SUNAT</td></tr>
+                <tr><td style="font-weight:600">Essalud</td><td>Planilla bruta</td><td class="mono">9%</td><td>Mensual</td><td>Último día hábil</td></tr>
+                <tr><td style="font-weight:600">AFP/ONP</td><td>Remuneración</td><td class="mono">~13%</td><td>Mensual</td><td>Último día hábil</td></tr>
+                <tr><td style="font-weight:600">CTS</td><td>Remuneración + 1/6 gratif.</td><td>—</td><td>Mayo y noviembre</td><td>15 mayo / 15 noviembre</td></tr>
+                <tr><td style="font-weight:600">Gratificaciones</td><td>Sueldo mensual</td><td>—</td><td>Julio y diciembre</td><td>15 julio / 15 diciembre</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="table-wrap" style="padding:18px">
+          <div class="section-title mt-0">Simulador Crédito Fiscal IGV</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+            <div class="form-group"><label>IGV Ventas (débito fiscal)</label><input type="number" id="cf-debito" placeholder="0" oninput="calcCF()"></div>
+            <div class="form-group"><label>IGV Compras (crédito fiscal)</label><input type="number" id="cf-credito" placeholder="0" oninput="calcCF()"></div>
+            <div class="form-group"><label>IGV a pagar / saldo a favor</label><input type="text" id="cf-saldo" readonly></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="page-eerr" class="page">
+      <div class="breadcrumb">Financiero</div>
+      <div class="page-header">
+        <h1>📈 EERR + Flujo de Caja <span class="badge">Proyección 12 meses</span></h1>
+      </div>
+      <div class="tabs">
+        <div class="tab active" id="eerr-tab-eerr" onclick="eerrTab('eerr')">📊 Estado de Resultados</div>
+        <div class="tab" id="eerr-tab-flujo" onclick="eerrTab('flujo')">💧 Flujo de Caja</div>
+        <div class="tab" id="eerr-tab-pe" onclick="eerrTab('pe')">⚖️ Punto de Equilibrio</div>
+      </div>
+      <div id="eerr-eerr">
+        <div class="table-wrap" style="padding:16px;margin-bottom:16px">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <div class="form-group"><label>Ventas diarias (und.)</label><input type="number" id="p-ventas" value="80" oninput="recalcEERR()"></div>
+            <div class="form-group"><label>Ticket promedio (S/)</label><input type="number" id="p-ticket" value="23" oninput="recalcEERR()"></div>
+            <div class="form-group"><label>Costo de venta (%)</label><input type="number" id="p-cv" value="42" oninput="recalcEERR()"></div>
+            <div class="form-group"><label>Otros gastos/mes (S/)</label><input type="number" id="p-otros" value="3000" oninput="recalcEERR()"></div>
+          </div>
+        </div>
+        <div class="kpi-row cols-4">
+          <div class="kpi-card green"><div class="kpi-label">Ingresos Mes 1</div><div class="kpi-value" id="eerr-kpi-ing">S/ 0</div></div>
+          <div class="kpi-card red"><div class="kpi-label">Egresos Mes 1</div><div class="kpi-value" id="eerr-kpi-egr">S/ 0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Utilidad Neta Mes 1</div><div class="kpi-value" id="eerr-kpi-util">S/ 0</div></div>
+          <div class="kpi-card blue"><div class="kpi-label">Margen Neto</div><div class="kpi-value" id="eerr-kpi-margen">0%</div></div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <span class="table-title">Estado de Resultados — 12 Meses</span>
+            <div class="ml-auto"><button class="t-btn" onclick="exportEERRCSV()">📤 CSV</button></div>
+          </div>
+          <div class="table-scroll"><table><thead id="eerr-thead"></thead><tbody id="eerr-tbody"></tbody></table></div>
+        </div>
+      </div>
+      <div id="eerr-flujo" style="display:none">
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <span class="table-title">Flujo de Caja — 12 Meses</span>
+            <div class="ml-auto"><button class="t-btn" onclick="exportFlujoCSV()">📤 CSV</button></div>
+          </div>
+          <div class="table-scroll"><table><thead id="flujo-thead"></thead><tbody id="flujo-tbody"></tbody></table></div>
+        </div>
+      </div>
+      <div id="eerr-pe" style="display:none">
+        <div class="kpi-row cols-3">
+          <div class="kpi-card"><div class="kpi-label">PE Unidades/día</div><div class="kpi-value" id="pe-und">0</div></div>
+          <div class="kpi-card green"><div class="kpi-label">PE en Soles/mes</div><div class="kpi-value" id="pe-soles">S/ 0</div></div>
+          <div class="kpi-card blue"><div class="kpi-label">Margen de Seguridad</div><div class="kpi-value" id="pe-seg">0%</div></div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-toolbar"><span class="table-title">Análisis Costos Fijos vs Variables</span></div>
+          <div class="table-scroll"><table>
+            <thead><tr><th>Concepto</th><th>Tipo</th><th>Monto Mensual (S/)</th></tr></thead>
+            <tbody id="pe-tbody"></tbody>
+            <tfoot id="pe-tfoot"></tfoot>
+          </table></div>
+        </div>
+      </div>
+    </div>
+    <div id="page-kpis" class="page">
+      <div class="breadcrumb">Financiero</div>
+      <div class="page-header">
+        <h1>🎯 KPIs Financieros <span class="badge">Ratios e Indicadores</span></h1>
+      </div>
+      <div class="kpi-row cols-3">
+        <div class="kpi-card green"><div class="kpi-label">ROI Año 1</div><div class="kpi-value" id="kpi-roi">0%</div><div class="kpi-sub">Retorno sobre inversión</div></div>
+        <div class="kpi-card"><div class="kpi-label">Payback</div><div class="kpi-value" id="kpi-payback">— meses</div><div class="kpi-sub">Recuperación de inversión</div></div>
+        <div class="kpi-card blue"><div class="kpi-label">VAN (12 meses)</div><div class="kpi-value" id="kpi-van">S/ 0</div><div class="kpi-sub">Tasa descuento 12%</div></div>
+        <div class="kpi-card red"><div class="kpi-label">TIR Mensual Est.</div><div class="kpi-value" id="kpi-tir">0%</div></div>
+        <div class="kpi-card"><div class="kpi-label">Margen Bruto</div><div class="kpi-value" id="kpi-mb">0%</div></div>
+        <div class="kpi-card"><div class="kpi-label">EBITDA Mes 1</div><div class="kpi-value" id="kpi-ebitda">S/ 0</div></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-toolbar"><span class="table-title">Ratios Financieros</span><div class="ml-auto"><button class="t-btn primary" onclick="recalcKPIs()">🔄 Recalcular</button></div></div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Ratio</th><th>Fórmula</th><th>Valor</th><th>Benchmark</th><th>Estado</th></tr></thead>
+            <tbody id="kpi-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="table-wrap" style="margin-top:0">
+        <div class="table-toolbar"><span class="table-title">FODA — MAE BURGER</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+          <div style="padding:16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)">
+            <div style="font-weight:700;color:var(--green-l);margin-bottom:8px">💪 FORTALEZAS</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.8">
+              ✅ Receta propia · identidad de marca fuerte<br>
+              ✅ Ubicación estratégica Av. Ricardo Palma 803<br>
+              ✅ Equipamiento industrial completo<br>
+              ✅ ERP propio — control total de gestión<br>
+              ✅ Ticket promedio competitivo (S/ 15–35)
+            </div>
+          </div>
+          <div style="padding:16px;border-bottom:1px solid var(--border)">
+            <div style="font-weight:700;color:#E87070;margin-bottom:8px">⚠️ DEBILIDADES</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.8">
+              ⚠️ Negocio nuevo — sin historial de ventas<br>
+              ⚠️ Capacidad limitada (~30 comensales)<br>
+              ⚠️ Dependencia de proveedor único de carne<br>
+              ⚠️ Préstamo bancario eleva gastos fijos<br>
+              ⚠️ Alta inversión inicial (S/ 114,899)
+            </div>
+          </div>
+          <div style="padding:16px;border-right:1px solid var(--border)">
+            <div style="font-weight:700;color:var(--blue-l);margin-bottom:8px">🚀 OPORTUNIDADES</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.8">
+              🚀 Trujillo: crecimiento gastronómico sostenido<br>
+              🚀 Alta demanda burgers artesanales millennials<br>
+              🚀 Delivery (PedidosYa, Rappi, Uber Eats)<br>
+              🚀 TikTok/Instagram para viralizar contenido<br>
+              🚀 Catering y eventos corporativos
+            </div>
+          </div>
+          <div style="padding:16px">
+            <div style="font-weight:700;color:var(--gold);margin-bottom:8px">🛡 AMENAZAS</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.8">
+              🛡 Competidores consolidados (Bembos, McDonald's)<br>
+              🛡 Alta rotación de personal en el sector<br>
+              🛡 Inflación en insumos (carne, aceite)<br>
+              🛡 Cambios en regulaciones sanitarias<br>
+              🛡 Nuevos entrantes artesanales locales
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /#app -->
+
+<!-- ════════ MODALES ════════ -->
+
+<!-- Modal Tangible -->
+<div id="modal-tang" class="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-tang-title">➕ Agregar Activo Tangible</h2>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Nombre del producto *</label>
+        <input type="text" id="tang-m-nombre" placeholder="Ej: Plancha industrial">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Zona *</label>
+        <select id="tang-m-zona">
+          <option>Fachada</option><option>Área Principal</option><option>Cocina</option>
+          <option>Almacén</option><option>Cobranza</option><option>Baños</option><option>Oficina</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Vida útil (años)</label>
+        <input type="number" id="tang-m-vida" value="5" min="1" oninput="recalcTangModal()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Cantidad *</label>
+        <input type="number" id="tang-m-cant" value="1" min="1" oninput="recalcTangModal()">
+      </div>
+      <div class="form-group">
+        <label>Precio unitario (S/) *</label>
+        <input type="number" id="tang-m-precio" value="0" min="0" oninput="recalcTangModal()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Total calculado</label>
+        <input type="text" id="tang-m-total" readonly>
+      </div>
+      <div class="form-group">
+        <label>Dep. anual calculada</label>
+        <input type="text" id="tang-m-dep" readonly>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn primary" onclick="saveTangible()">💾 Guardar</button>
+      <button class="btn secondary" onclick="closeModal('modal-tang')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Intangible -->
+<div id="modal-intang" class="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-intang-title">➕ Agregar Activo Intangible</h2>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Concepto *</label>
+        <input type="text" id="intang-m-nombre" placeholder="Ej: Licencia de funcionamiento">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Entidad tramitadora</label>
+        <input type="text" id="intang-m-entidad" placeholder="Ej: Municipalidad Trujillo">
+      </div>
+      <div class="form-group">
+        <label>Vida útil (años)</label>
+        <input type="number" id="intang-m-vida" value="5" min="1" oninput="recalcIntangModal()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Cantidad</label>
+        <input type="number" id="intang-m-cant" value="1" min="1" oninput="recalcIntangModal()">
+      </div>
+      <div class="form-group">
+        <label>Precio unitario (S/)</label>
+        <input type="number" id="intang-m-precio" value="0" min="0" oninput="recalcIntangModal()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Total</label>
+        <input type="text" id="intang-m-total" readonly>
+      </div>
+      <div class="form-group">
+        <label>Amort. anual</label>
+        <input type="text" id="intang-m-amort" readonly>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn primary" onclick="saveIntangible()">💾 Guardar</button>
+      <button class="btn secondary" onclick="closeModal('modal-intang')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Planilla -->
+<div id="modal-plan" class="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-plan-title">➕ Agregar Puesto</h2>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Nombre del puesto *</label>
+        <input type="text" id="plan-m-puesto" placeholder="Ej: Cocinero principal">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Cantidad de trabajadores</label>
+        <input type="number" id="plan-m-cant" value="1" min="1" oninput="recalcPlanModal()">
+      </div>
+      <div class="form-group">
+        <label>Sueldo unitario (S/)</label>
+        <input type="number" id="plan-m-sueldo" value="1025" min="1025" oninput="recalcPlanModal()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Sueldo total</label><input type="text" id="plan-m-total" readonly></div>
+      <div class="form-group"><label>Essalud 9%</label><input type="text" id="plan-m-essalud" readonly></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Gratific./mes</label><input type="text" id="plan-m-grat" readonly></div>
+      <div class="form-group"><label>CTS/mes</label><input type="text" id="plan-m-cts" readonly></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Vacac./mes</label><input type="text" id="plan-m-vac" readonly></div>
+      <div class="form-group"><label>Costo total/mes</label><input type="text" id="plan-m-costo" readonly></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn primary" onclick="savePlanilla()">💾 Guardar</button>
+      <button class="btn secondary" onclick="closeModal('modal-plan')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Inventario -->
+<div id="modal-inv" class="modal-overlay">
+  <div class="modal" style="max-width:400px">
+    <h2 id="inv-modal-title">📥 Registrar Entrada</h2>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Insumo</label>
+      <select id="inv-modal-insumo" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:6px;font-family:inherit"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Cantidad</label>
+        <input type="number" id="inv-modal-cant" value="1" min="0.1" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>Motivo</label>
+        <input type="text" id="inv-modal-motivo" placeholder="Compra / Producción...">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn primary" onclick="saveMovInv()">✅ Registrar</button>
+      <button class="btn secondary" onclick="closeModal('modal-inv')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-wrap"></div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════
+//  DATOS INICIALES
+// ══════════════════════════════════════════════════════
+
+var tangiblesData = [
+  {id:1,zona:'Fachada',nombre:'Letrero luminoso LED',cant:1,precio:2500,vida:5},
+  {id:2,zona:'Fachada',nombre:'Toldo retráctil',cant:2,precio:450,vida:5},
+  {id:3,zona:'Fachada',nombre:'Puerta enrollable metálica',cant:2,precio:1200,vida:10},
+  {id:4,zona:'Fachada',nombre:'Ventana de vidrio templado',cant:3,precio:900,vida:10},
+  {id:5,zona:'Fachada',nombre:'Luminaria exterior LED',cant:8,precio:60,vida:5},
+  {id:6,zona:'Área Principal',nombre:'Mesa 4 personas (madera)',cant:8,precio:499,vida:8},
+  {id:7,zona:'Área Principal',nombre:'Silla de comedor madera',cant:28,precio:119,vida:8},
+  {id:8,zona:'Área Principal',nombre:'Sofá 3 cuerpos',cant:1,precio:1299,vida:8},
+  {id:9,zona:'Área Principal',nombre:'Lámpara colgante industrial',cant:10,precio:89,vida:5},
+  {id:10,zona:'Cocina',nombre:'Campana extractora industrial',cant:1,precio:2500,vida:10},
+  {id:11,zona:'Cocina',nombre:'Plancha grill industrial',cant:1,precio:1800,vida:10},
+  {id:12,zona:'Cocina',nombre:'Freidora industrial doble',cant:1,precio:950,vida:8},
+  {id:13,zona:'Cocina',nombre:'Refrigerador vertical comercial',cant:1,precio:2200,vida:10},
+  {id:14,zona:'Cocina',nombre:'Mesa de preparación inox.',cant:1,precio:950,vida:10},
+  {id:15,zona:'Almacén',nombre:'Estanterías metálicas',cant:6,precio:420,vida:10},
+  {id:16,zona:'Almacén',nombre:'Refrigerador vertical comercial',cant:2,precio:2200,vida:10},
+  {id:17,zona:'Almacén',nombre:'Congelador vertical',cant:1,precio:2400,vida:10},
+  {id:18,zona:'Cobranza',nombre:'Terminal POS táctil',cant:2,precio:599,vida:5},
+  {id:19,zona:'Cobranza',nombre:'Mostrador / counter',cant:1,precio:850,vida:10},
+  {id:20,zona:'Baños',nombre:'Inodoros blancos',cant:2,precio:550,vida:15},
+  {id:21,zona:'Baños',nombre:'Lavabos rectangulares',cant:2,precio:300,vida:15},
+  {id:22,zona:'Baños',nombre:'Espejos LED',cant:2,precio:450,vida:8},
+  {id:23,zona:'Oficina',nombre:'Escritorio de madera',cant:1,precio:600,vida:8},
+  {id:24,zona:'Oficina',nombre:'Silla ergonómica',cant:1,precio:350,vida:5},
+  {id:25,zona:'Oficina',nombre:'Mampara de vidrio',cant:1,precio:1500,vida:10}
+];
+
+var intangiblesData = [
+  {id:1,nombre:'Licencia de Funcionamiento',cant:1,precio:500,vida:5,entidad:'Municipalidad Trujillo'},
+  {id:2,nombre:'Certificado ITSE (Defensa Civil)',cant:1,precio:350,vida:1,entidad:'Municipalidad / INDECI'},
+  {id:3,nombre:'Registro Sanitario DIGESA',cant:1,precio:150,vida:5,entidad:'www.gob.pe'},
+  {id:4,nombre:'Carnet de Sanidad x5',cant:5,precio:30,vida:1,entidad:'Municipalidad'},
+  {id:5,nombre:'RUC SUNAT',cant:1,precio:0,vida:99,entidad:'www.sunat.gob.pe'},
+  {id:6,nombre:'Autorización publicidad',cant:1,precio:200,vida:1,entidad:'Municipalidad'},
+  {id:7,nombre:'Libro de Reclamaciones',cant:1,precio:50,vida:3,entidad:'INDECOPI'},
+  {id:8,nombre:'Certificado Fumigación',cant:1,precio:80,vida:1,entidad:'Empresa privada'},
+  {id:9,nombre:'Contrato Residuos Sólidos',cant:1,precio:50,vida:1,entidad:'Municipal/privado'},
+  {id:10,nombre:'Registro de Marca INDECOPI',cant:1,precio:534,vida:10,entidad:'www.indecopi.gob.pe'}
+];
+
+var planillaData = [
+  {id:1,puesto:'Cocinero principal',cant:1,sueldo:1800},
+  {id:2,puesto:'Ayudante de cocina',cant:2,sueldo:1200},
+  {id:3,puesto:'Meseros',cant:3,sueldo:1100},
+  {id:4,puesto:'Personal de limpieza',cant:1,sueldo:1025},
+  {id:5,puesto:'Cajero/a',cant:1,sueldo:1100},
+  {id:6,puesto:'Supervisor/Encargado',cant:1,sueldo:1600}
+];
+
+var amortizacionData = [];
+var editTangIdx = null;
+var editIntangIdx = null;
+var editPlanIdx = null;
+var nextTangId = 26;
+var nextIntangId = 11;
+var nextPlanId = 7;
+
+// ══════════════════════════════════════════════════════
+//  NAVEGACIÓN — showPage (función obligatoria del prompt)
+// ══════════════════════════════════════════════════════
+
+function showPage(pageId) {
+  // Ocultar todas las páginas
+  var pages = document.querySelectorAll('.page');
+  for (var i = 0; i < pages.length; i++) {
+    pages[i].classList.remove('active');
+  }
+  // Mostrar la página solicitada
+  var target = document.getElementById('page-' + pageId);
+  if (target) {
+    target.classList.add('active');
+  }
+  // Actualizar sidebar
+  var navItems = document.querySelectorAll('.nav-item');
+  for (var j = 0; j < navItems.length; j++) {
+    navItems[j].classList.remove('active');
+  }
+  var activeNav = document.getElementById('nav-' + pageId);
+  if (activeNav) {
+    activeNav.classList.add('active');
+  }
+  // Re-renderizar si es necesario
+  if (pageId === 'tangibles') { renderTangibles(); }
+  if (pageId === 'intangibles') { renderIntangibles(); }
+  if (pageId === 'planilla') { renderPlanilla(); }
+  if (pageId === 'financiamiento') { calcAmortizacion(); }
+  if (pageId === 'dashboard') { renderDashboard(); }
+}
+
+// ══════════════════════════════════════════════════════
+//  UTILIDADES
+// ══════════════════════════════════════════════════════
+
+function fmt(n) {
+  if (typeof n !== 'number') { return 'S/ 0.00'; }
+  return 'S/ ' + n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtN(n) {
+  if (typeof n !== 'number') { return '0.00'; }
+  return n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function zonaClass(zona) {
+  var map = {
+    'Fachada': 'z-fachada',
+    'Área Principal': 'z-principal',
+    'Cocina': 'z-cocina',
+    'Almacén': 'z-almacen',
+    'Cobranza': 'z-cobranza',
+    'Baños': 'z-banos',
+    'Oficina': 'z-oficina'
+  };
+  return map[zona] || 'z-fachada';
+}
+
+function showToast(msg, type) {
+  type = type || 'info';
+  var wrap = document.getElementById('toast-wrap');
+  var t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(function() { if (t.parentNode) { t.parentNode.removeChild(t); } }, 3500);
+}
+
+function closeModal(id) {
+  var m = document.getElementById(id);
+  if (m) { m.classList.remove('open'); }
+}
+
+function openModal(id) {
+  var m = document.getElementById(id);
+  if (m) { m.classList.add('open'); }
+}
+
+// Cerrar modal al click fuera
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('open');
+  }
+});
+
+// ══════════════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════════════
+
+function renderDashboard() {
+  var totalTang = calcTotalTang();
+  var totalIntang = calcTotalIntang();
+  var totalPlan = calcTotalPlan();
+
+  var dashTang = document.getElementById('dash-tang');
+  var dashIntang = document.getElementById('dash-intang');
+  var dashPlan = document.getElementById('dash-planilla');
+  var dashTangItems = document.getElementById('dash-tang-items');
+
+  if (dashTang) { dashTang.textContent = fmt(totalTang); }
+  if (dashIntang) { dashIntang.textContent = fmt(totalIntang); }
+  if (dashPlan) { dashPlan.textContent = fmt(totalPlan.bruta); }
+  if (dashTangItems) { dashTangItems.textContent = tangiblesData.length + ' ítems · 7 zonas'; }
+
+  // Progress bars
+  var modulos = [
+    { name: 'Dashboard', pct: 100, color: '#28A745' },
+    { name: 'Activos Tangibles', pct: 100, color: '#28A745' },
+    { name: 'Activos Intangibles', pct: 100, color: '#28A745' },
+    { name: 'Planilla Laboral', pct: 100, color: '#28A745' },
+    { name: 'Financiamiento', pct: 100, color: '#28A745' },
+    { name: 'ESF / Balance', pct: 0, color: '#444' },
+    { name: 'Ecommerce + POS', pct: 0, color: '#444' },
+    { name: 'Inventario / Kardex', pct: 0, color: '#444' },
+    { name: 'Facturación SUNAT', pct: 0, color: '#444' },
+    { name: 'EERR + Flujo de Caja', pct: 0, color: '#444' },
+    { name: 'KPIs Financieros', pct: 0, color: '#444' }
+  ];
+
+  var html = '';
+  for (var i = 0; i < modulos.length; i++) {
+    var m = modulos[i];
+    html += '<div class="prog-item">' +
+      '<span class="prog-label">' + m.name + '</span>' +
+      '<div class="prog-bar-wrap"><div class="prog-bar" style="width:' + m.pct + '%;background:' + m.color + '"></div></div>' +
+      '<span class="prog-val">' + m.pct + '%</span>' +
+      '</div>';
+  }
+  var el = document.getElementById('modulos-progress');
+  if (el) { el.innerHTML = html; }
+}
+
+// ══════════════════════════════════════════════════════
+//  ACTIVOS TANGIBLES
+// ══════════════════════════════════════════════════════
+
+function calcTotalTang() {
+  var total = 0;
+  for (var i = 0; i < tangiblesData.length; i++) {
+    total += tangiblesData[i].cant * tangiblesData[i].precio;
+  }
+  return total;
+}
+
+function calcDepTang() {
+  var depA = 0;
+  for (var i = 0; i < tangiblesData.length; i++) {
+    var t = tangiblesData[i];
+    depA += (t.cant * t.precio) / t.vida;
+  }
+  return depA;
+}
+
+function renderTangibles() {
+  var q = document.getElementById('tang-search') ? document.getElementById('tang-search').value.toLowerCase() : '';
+  var zona = document.getElementById('tang-zona-filter') ? document.getElementById('tang-zona-filter').value : '';
+
+  var filtered = tangiblesData.filter(function(t) {
+    var matchQ = !q || t.nombre.toLowerCase().indexOf(q) >= 0 || t.zona.toLowerCase().indexOf(q) >= 0;
+    var matchZ = !zona || t.zona === zona;
+    return matchQ && matchZ;
+  });
+
+  var tbody = document.getElementById('tang-tbody');
+  var tfoot = document.getElementById('tang-tfoot');
+  var info = document.getElementById('tang-info');
+
+  if (!tbody) { return; }
+
+  var totalM = 0, totalDepA = 0;
+  var rows = '';
+
+  for (var i = 0; i < filtered.length; i++) {
+    var t = filtered[i];
+    var tot = t.cant * t.precio;
+    var depA = tot / t.vida;
+    var depM = depA / 12;
+    totalM += tot;
+    totalDepA += depA;
+
+    rows += '<tr>' +
+      '<td class="mono dim">' + t.id + '</td>' +
+      '<td><span class="zona-badge ' + zonaClass(t.zona) + '">' + t.zona + '</span></td>' +
+      '<td>' + t.nombre + '</td>' +
+      '<td class="mono">' + t.cant + '</td>' +
+      '<td class="mono">' + fmtN(t.precio) + '</td>' +
+      '<td class="gold">' + fmtN(tot) + '</td>' +
+      '<td class="mono">' + t.vida + ' años</td>' +
+      '<td class="mono">' + fmtN(depA) + '</td>' +
+      '<td class="mono">' + fmtN(depM) + '</td>' +
+      '<td>' +
+        '<button class="t-btn" style="padding:3px 8px;font-size:11px;margin-right:4px" onclick="editTangible(' + t.id + ')">✏</button>' +
+        '<button class="t-btn danger" style="padding:3px 8px;font-size:11px" onclick="deleteTangible(' + t.id + ')">🗑</button>' +
+      '</td>' +
+      '</tr>';
+  }
+
+  tbody.innerHTML = rows || '<tr><td colspan="10" style="text-align:center;color:var(--dim);padding:30px">Sin resultados</td></tr>';
+
+  var totalDepM = totalDepA / 12;
+  tfoot.innerHTML = '<tr>' +
+    '<td colspan="5">TOTAL (' + filtered.length + ' ítems)</td>' +
+    '<td>' + fmtN(totalM) + '</td>' +
+    '<td></td>' +
+    '<td>' + fmtN(totalDepA) + '</td>' +
+    '<td>' + fmtN(totalDepM) + '</td>' +
+    '<td></td>' +
+    '</tr>';
+
+  if (info) { info.textContent = filtered.length + ' de ' + tangiblesData.length + ' registros'; }
+
+  // KPIs
+  var allTotal = calcTotalTang();
+  var allDepA = calcDepTang();
+  var el;
+  el = document.getElementById('tang-kpi-total'); if (el) { el.textContent = fmt(allTotal); }
+  el = document.getElementById('tang-kpi-dep-a'); if (el) { el.textContent = fmt(allDepA); }
+  el = document.getElementById('tang-kpi-dep-m'); if (el) { el.textContent = fmt(allDepA / 12); }
+  el = document.getElementById('tang-kpi-neto'); if (el) { el.textContent = fmt(allTotal - allDepA); }
+  el = document.getElementById('tang-kpi-items'); if (el) { el.textContent = tangiblesData.length + ' ítems'; }
+  el = document.getElementById('badge-tang'); if (el) { el.textContent = tangiblesData.length + ' ítems'; }
+}
+
+function filterTangibles() {
+  renderTangibles();
+}
+
+function openTangModal() {
+  editTangIdx = null;
+  document.getElementById('modal-tang-title').textContent = '➕ Agregar Activo Tangible';
+  document.getElementById('tang-m-nombre').value = '';
+  document.getElementById('tang-m-zona').value = 'Fachada';
+  document.getElementById('tang-m-cant').value = '1';
+  document.getElementById('tang-m-precio').value = '0';
+  document.getElementById('tang-m-vida').value = '5';
+  recalcTangModal();
+  openModal('modal-tang');
+}
+
+function editTangible(id) {
+  var t = null;
+  for (var i = 0; i < tangiblesData.length; i++) {
+    if (tangiblesData[i].id === id) { t = tangiblesData[i]; editTangIdx = i; break; }
+  }
+  if (!t) { return; }
+  document.getElementById('modal-tang-title').textContent = '✏️ Editar Activo Tangible';
+  document.getElementById('tang-m-nombre').value = t.nombre;
+  document.getElementById('tang-m-zona').value = t.zona;
+  document.getElementById('tang-m-cant').value = t.cant;
+  document.getElementById('tang-m-precio').value = t.precio;
+  document.getElementById('tang-m-vida').value = t.vida;
+  recalcTangModal();
+  openModal('modal-tang');
+}
+
+function recalcTangModal() {
+  var cant = parseFloat(document.getElementById('tang-m-cant').value) || 0;
+  var precio = parseFloat(document.getElementById('tang-m-precio').value) || 0;
+  var vida = parseFloat(document.getElementById('tang-m-vida').value) || 1;
+  var total = cant * precio;
+  var dep = vida > 0 ? total / vida : 0;
+  document.getElementById('tang-m-total').value = fmt(total);
+  document.getElementById('tang-m-dep').value = fmt(dep) + '/año';
+}
+
+function saveTangible() {
+  var nombre = document.getElementById('tang-m-nombre').value.trim();
+  if (!nombre) { showToast('⚠️ El nombre es obligatorio', 'error'); return; }
+  var cant = parseFloat(document.getElementById('tang-m-cant').value) || 0;
+  var precio = parseFloat(document.getElementById('tang-m-precio').value) || 0;
+  var vida = parseFloat(document.getElementById('tang-m-vida').value) || 1;
+  if (cant <= 0 || precio < 0) { showToast('⚠️ Cantidad y precio inválidos', 'error'); return; }
+
+  var item = {
+    id: editTangIdx !== null ? tangiblesData[editTangIdx].id : nextTangId++,
+    zona: document.getElementById('tang-m-zona').value,
+    nombre: nombre,
+    cant: cant,
+    precio: precio,
+    vida: vida
+  };
+
+  if (editTangIdx !== null) {
+    tangiblesData[editTangIdx] = item;
+    showToast('✅ Activo actualizado', 'success');
+  } else {
+    tangiblesData.push(item);
+    showToast('✅ Activo agregado', 'success');
+  }
+
+  closeModal('modal-tang');
+  renderTangibles();
+  renderDashboard();
+}
+
+function deleteTangible(id) {
+  if (!confirm('¿Eliminar este activo?')) { return; }
+  tangiblesData = tangiblesData.filter(function(t) { return t.id !== id; });
+  renderTangibles();
+  renderDashboard();
+  showToast('🗑 Activo eliminado', 'info');
+}
+
+function exportTangCSV() {
+  var rows = [['#','Zona','Producto','Cant','P.Unitario','Total','Vida','Dep.Anual','Dep.Mensual']];
+  for (var i = 0; i < tangiblesData.length; i++) {
+    var t = tangiblesData[i];
+    var tot = t.cant * t.precio;
+    var dep = tot / t.vida;
+    rows.push([t.id, t.zona, t.nombre, t.cant, t.precio, tot.toFixed(2), t.vida, dep.toFixed(2), (dep/12).toFixed(2)]);
+  }
+  downloadCSV(rows, 'MAE_Tangibles.csv');
+}
+
+// ══════════════════════════════════════════════════════
+//  ACTIVOS INTANGIBLES
+// ══════════════════════════════════════════════════════
+
+function calcTotalIntang() {
+  var total = 0;
+  for (var i = 0; i < intangiblesData.length; i++) {
+    total += intangiblesData[i].cant * intangiblesData[i].precio;
+  }
+  return total;
+}
+
+function renderIntangibles() {
+  var tbody = document.getElementById('intang-tbody');
+  var tfoot = document.getElementById('intang-tfoot');
+  var info = document.getElementById('intang-info');
+  if (!tbody) { return; }
+
+  var totalM = 0, totalAmortA = 0;
+  var rows = '';
+
+  for (var i = 0; i < intangiblesData.length; i++) {
+    var t = intangiblesData[i];
+    var tot = t.cant * t.precio;
+    var amortA = (t.vida > 0 && t.vida < 99) ? tot / t.vida : 0;
+    var amortM = amortA / 12;
+    totalM += tot;
+    totalAmortA += amortA;
+
+    rows += '<tr>' +
+      '<td class="mono dim">' + t.id + '</td>' +
+      '<td>' + t.nombre + '</td>' +
+      '<td class="mono">' + t.cant + '</td>' +
+      '<td class="mono">' + fmtN(t.precio) + '</td>' +
+      '<td class="gold">' + fmtN(tot) + '</td>' +
+      '<td class="mono">' + (t.vida >= 99 ? 'Indefinida' : t.vida + ' años') + '</td>' +
+      '<td class="mono">' + fmtN(amortA) + '</td>' +
+      '<td class="mono">' + fmtN(amortM) + '</td>' +
+      '<td class="dim" style="font-size:11px">' + (t.entidad || '—') + '</td>' +
+      '<td>' +
+        '<button class="t-btn" style="padding:3px 8px;font-size:11px;margin-right:4px" onclick="editIntangible(' + t.id + ')">✏</button>' +
+        '<button class="t-btn danger" style="padding:3px 8px;font-size:11px" onclick="deleteIntangible(' + t.id + ')">🗑</button>' +
+      '</td>' +
+      '</tr>';
+  }
+
+  tbody.innerHTML = rows || '<tr><td colspan="10" style="text-align:center;color:var(--dim);padding:30px">Sin registros</td></tr>';
+
+  tfoot.innerHTML = '<tr>' +
+    '<td colspan="4">TOTAL INTANGIBLES</td>' +
+    '<td>' + fmtN(totalM) + '</td>' +
+    '<td></td>' +
+    '<td>' + fmtN(totalAmortA) + '</td>' +
+    '<td>' + fmtN(totalAmortA/12) + '</td>' +
+    '<td colspan="2"></td>' +
+    '</tr>';
+
+  if (info) { info.textContent = intangiblesData.length + ' registros'; }
+
+  var el;
+  el = document.getElementById('intang-kpi-total'); if (el) { el.textContent = fmt(totalM); }
+  el = document.getElementById('intang-kpi-amort-a'); if (el) { el.textContent = fmt(totalAmortA); }
+  el = document.getElementById('intang-kpi-amort-m'); if (el) { el.textContent = fmt(totalAmortA/12); }
+  el = document.getElementById('badge-intang'); if (el) { el.textContent = intangiblesData.length + ' conceptos'; }
+}
+
+function openIntangModal() {
+  editIntangIdx = null;
+  document.getElementById('modal-intang-title').textContent = '➕ Agregar Activo Intangible';
+  document.getElementById('intang-m-nombre').value = '';
+  document.getElementById('intang-m-entidad').value = '';
+  document.getElementById('intang-m-cant').value = '1';
+  document.getElementById('intang-m-precio').value = '0';
+  document.getElementById('intang-m-vida').value = '5';
+  recalcIntangModal();
+  openModal('modal-intang');
+}
+
+function editIntangible(id) {
+  var t = null;
+  for (var i = 0; i < intangiblesData.length; i++) {
+    if (intangiblesData[i].id === id) { t = intangiblesData[i]; editIntangIdx = i; break; }
+  }
+  if (!t) { return; }
+  document.getElementById('modal-intang-title').textContent = '✏️ Editar Activo Intangible';
+  document.getElementById('intang-m-nombre').value = t.nombre;
+  document.getElementById('intang-m-entidad').value = t.entidad || '';
+  document.getElementById('intang-m-cant').value = t.cant;
+  document.getElementById('intang-m-precio').value = t.precio;
+  document.getElementById('intang-m-vida').value = t.vida;
+  recalcIntangModal();
+  openModal('modal-intang');
+}
+
+function recalcIntangModal() {
+  var cant = parseFloat(document.getElementById('intang-m-cant').value) || 0;
+  var precio = parseFloat(document.getElementById('intang-m-precio').value) || 0;
+  var vida = parseFloat(document.getElementById('intang-m-vida').value) || 1;
+  var total = cant * precio;
+  var amort = (vida > 0 && vida < 99) ? total / vida : 0;
+  document.getElementById('intang-m-total').value = fmt(total);
+  document.getElementById('intang-m-amort').value = fmt(amort) + '/año';
+}
+
+function saveIntangible() {
+  var nombre = document.getElementById('intang-m-nombre').value.trim();
+  if (!nombre) { showToast('⚠️ El concepto es obligatorio', 'error'); return; }
+  var item = {
+    id: editIntangIdx !== null ? intangiblesData[editIntangIdx].id : nextIntangId++,
+    nombre: nombre,
+    entidad: document.getElementById('intang-m-entidad').value.trim(),
+    cant: parseFloat(document.getElementById('intang-m-cant').value) || 1,
+    precio: parseFloat(document.getElementById('intang-m-precio').value) || 0,
+    vida: parseFloat(document.getElementById('intang-m-vida').value) || 5
+  };
+  if (editIntangIdx !== null) {
+    intangiblesData[editIntangIdx] = item;
+    showToast('✅ Intangible actualizado', 'success');
+  } else {
+    intangiblesData.push(item);
+    showToast('✅ Intangible agregado', 'success');
+  }
+  closeModal('modal-intang');
+  renderIntangibles();
+  renderDashboard();
+}
+
+function deleteIntangible(id) {
+  if (!confirm('¿Eliminar este activo intangible?')) { return; }
+  intangiblesData = intangiblesData.filter(function(t) { return t.id !== id; });
+  renderIntangibles();
+  renderDashboard();
+  showToast('🗑 Eliminado', 'info');
+}
+
+function exportIntangCSV() {
+  var rows = [['#','Concepto','Cant','P.Unit','Total','Vida','Amort.Anual','Amort.Mensual','Entidad']];
+  for (var i = 0; i < intangiblesData.length; i++) {
+    var t = intangiblesData[i];
+    var tot = t.cant * t.precio;
+    var amort = (t.vida < 99) ? tot/t.vida : 0;
+    rows.push([t.id, t.nombre, t.cant, t.precio, tot.toFixed(2), t.vida, amort.toFixed(2), (amort/12).toFixed(2), t.entidad]);
+  }
+  downloadCSV(rows, 'MAE_Intangibles.csv');
+}
+
+// ══════════════════════════════════════════════════════
+//  PLANILLA
+// ══════════════════════════════════════════════════════
+
+function calcTotalPlan() {
+  var bruta = 0, costo = 0, essalud = 0;
+  for (var i = 0; i < planillaData.length; i++) {
+    var p = planillaData[i];
+    var st = p.cant * p.sueldo;
+    var es = st * 0.09;
+    var gr = st / 6;
+    var cts = st / 12;
+    var vac = st / 12;
+    var cm = st + es + gr + cts + vac;
+    bruta += st;
+    essalud += es;
+    costo += cm;
+  }
+  return { bruta: bruta, costo: costo, essalud: essalud };
+}
+
+function renderPlanilla() {
+  var tbody = document.getElementById('plan-tbody');
+  var tfoot = document.getElementById('plan-tfoot');
+  var info = document.getElementById('plan-info');
+  if (!tbody) { return; }
+
+  var totBruta = 0, totCosto = 0, totEssalud = 0;
+  var rows = '';
+
+  for (var i = 0; i < planillaData.length; i++) {
+    var p = planillaData[i];
+    var st = p.cant * p.sueldo;
+    var es = st * 0.09;
+    var gr = st / 6;
+    var cts = st / 12;
+    var vac = st / 12;
+    var cm = st + es + gr + cts + vac;
+    var ca = cm * 12;
+    totBruta += st;
+    totEssalud += es;
+    totCosto += cm;
+
+    rows += '<tr>' +
+      '<td class="mono dim">' + p.id + '</td>' +
+      '<td style="font-weight:500">' + p.puesto + '</td>' +
+      '<td class="mono">' + p.cant + '</td>' +
+      '<td class="gold">' + fmtN(p.sueldo) + '</td>' +
+      '<td class="gold">' + fmtN(st) + '</td>' +
+      '<td class="mono">' + fmtN(es) + '</td>' +
+      '<td class="mono">' + fmtN(gr) + '</td>' +
+      '<td class="mono">' + fmtN(cts) + '</td>' +
+      '<td class="mono">' + fmtN(vac) + '</td>' +
+      '<td class="gold" style="font-weight:700">' + fmtN(cm) + '</td>' +
+      '<td class="gold">' + fmtN(ca) + '</td>' +
+      '<td>' +
+        '<button class="t-btn" style="padding:3px 8px;font-size:11px;margin-right:4px" onclick="editPlanilla(' + p.id + ')">✏</button>' +
+        '<button class="t-btn danger" style="padding:3px 8px;font-size:11px" onclick="deletePlanilla(' + p.id + ')">🗑</button>' +
+      '</td>' +
+      '</tr>';
+  }
+
+  tbody.innerHTML = rows || '<tr><td colspan="12" style="text-align:center;color:var(--dim);padding:30px">Sin registros</td></tr>';
+
+  tfoot.innerHTML = '<tr>' +
+    '<td colspan="4">TOTALES</td>' +
+    '<td>' + fmtN(totBruta) + '</td>' +
+    '<td>' + fmtN(totEssalud) + '</td>' +
+    '<td colspan="3"></td>' +
+    '<td>' + fmtN(totCosto) + '</td>' +
+    '<td>' + fmtN(totCosto*12) + '</td>' +
+    '<td></td>' +
+    '</tr>';
+
+  if (info) { info.textContent = planillaData.length + ' puestos'; }
+
+  var el;
+  el = document.getElementById('plan-kpi-bruta'); if (el) { el.textContent = fmt(totBruta); }
+  el = document.getElementById('plan-kpi-total'); if (el) { el.textContent = fmt(totCosto); }
+  el = document.getElementById('plan-kpi-anual'); if (el) { el.textContent = fmt(totCosto * 12); }
+  el = document.getElementById('plan-kpi-essalud'); if (el) { el.textContent = fmt(totEssalud); }
+}
+
+function openPlanModal() {
+  editPlanIdx = null;
+  document.getElementById('modal-plan-title').textContent = '➕ Agregar Puesto';
+  document.getElementById('plan-m-puesto').value = '';
+  document.getElementById('plan-m-cant').value = '1';
+  document.getElementById('plan-m-sueldo').value = '1025';
+  recalcPlanModal();
+  openModal('modal-plan');
+}
+
+function editPlanilla(id) {
+  var p = null;
+  for (var i = 0; i < planillaData.length; i++) {
+    if (planillaData[i].id === id) { p = planillaData[i]; editPlanIdx = i; break; }
+  }
+  if (!p) { return; }
+  document.getElementById('modal-plan-title').textContent = '✏️ Editar Puesto';
+  document.getElementById('plan-m-puesto').value = p.puesto;
+  document.getElementById('plan-m-cant').value = p.cant;
+  document.getElementById('plan-m-sueldo').value = p.sueldo;
+  recalcPlanModal();
+  openModal('modal-plan');
+}
+
+function recalcPlanModal() {
+  var cant = parseFloat(document.getElementById('plan-m-cant').value) || 0;
+  var sueldo = parseFloat(document.getElementById('plan-m-sueldo').value) || 0;
+  var st = cant * sueldo;
+  var es = st * 0.09;
+  var gr = st / 6;
+  var cts = st / 12;
+  var vac = st / 12;
+  var cm = st + es + gr + cts + vac;
+  document.getElementById('plan-m-total').value = fmt(st);
+  document.getElementById('plan-m-essalud').value = fmt(es);
+  document.getElementById('plan-m-grat').value = fmt(gr);
+  document.getElementById('plan-m-cts').value = fmt(cts);
+  document.getElementById('plan-m-vac').value = fmt(vac);
+  document.getElementById('plan-m-costo').value = fmt(cm);
+}
+
+function savePlanilla() {
+  var puesto = document.getElementById('plan-m-puesto').value.trim();
+  if (!puesto) { showToast('⚠️ El nombre del puesto es obligatorio', 'error'); return; }
+  var item = {
+    id: editPlanIdx !== null ? planillaData[editPlanIdx].id : nextPlanId++,
+    puesto: puesto,
+    cant: parseFloat(document.getElementById('plan-m-cant').value) || 1,
+    sueldo: parseFloat(document.getElementById('plan-m-sueldo').value) || 1025
+  };
+  if (editPlanIdx !== null) {
+    planillaData[editPlanIdx] = item;
+    showToast('✅ Puesto actualizado', 'success');
+  } else {
+    planillaData.push(item);
+    showToast('✅ Puesto agregado', 'success');
+  }
+  closeModal('modal-plan');
+  renderPlanilla();
+  renderDashboard();
+}
+
+function deletePlanilla(id) {
+  if (!confirm('¿Eliminar este puesto?')) { return; }
+  planillaData = planillaData.filter(function(p) { return p.id !== id; });
+  renderPlanilla();
+  renderDashboard();
+  showToast('🗑 Puesto eliminado', 'info');
+}
+
+function exportPlanCSV() {
+  var rows = [['#','Puesto','Cant','Sueldo','Total','Essalud','Gratif.','CTS','Vacac.','Costo/mes','Costo/año']];
+  for (var i = 0; i < planillaData.length; i++) {
+    var p = planillaData[i];
+    var st = p.cant * p.sueldo;
+    var es = st*0.09, gr = st/6, cts = st/12, vac = st/12, cm = st+es+gr+cts+vac;
+    rows.push([p.id, p.puesto, p.cant, p.sueldo, st.toFixed(2), es.toFixed(2), gr.toFixed(2), cts.toFixed(2), vac.toFixed(2), cm.toFixed(2), (cm*12).toFixed(2)]);
+  }
+  downloadCSV(rows, 'MAE_Planilla.csv');
+}
+
+// ══════════════════════════════════════════════════════
+//  FINANCIAMIENTO — MÉTODO FRANCÉS
+// ══════════════════════════════════════════════════════
+
+function calcAmortizacion() {
+  var monto = parseFloat(document.getElementById('fin-monto').value) || 0;
+  var tasaA = parseFloat(document.getElementById('fin-tasa').value) || 0;
+  var plazo = parseInt(document.getElementById('fin-plazo').value) || 0;
+
+  if (monto <= 0 || tasaA <= 0 || plazo <= 0) {
+    amortizacionData = [];
+    renderAmortizacion([]);
+    return;
+  }
+
+  var tasaM = tasaA / 12 / 100;
+  var cuota = monto * (tasaM * Math.pow(1 + tasaM, plazo)) / (Math.pow(1 + tasaM, plazo) - 1);
+
+  var rows = [];
+  var saldo = monto;
+  var totalCapital = 0, totalInteres = 0;
+  var mesesNombres = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var inicio = new Date(2026, 0);
+
+  for (var k = 1; k <= plazo; k++) {
+    var d = new Date(inicio.getFullYear(), inicio.getMonth() + k - 1);
+    var mesNombre = mesesNombres[d.getMonth()] + ' ' + d.getFullYear();
+    var interes = saldo * tasaM;
+    var capital = cuota - interes;
+    var saldoFin = Math.max(0, saldo - capital);
+    totalCapital += capital;
+    totalInteres += interes;
+    rows.push({ n: k, mes: mesNombre, saldoIni: saldo, capital: capital, interes: interes, cuota: cuota, saldoFin: saldoFin });
+    saldo = saldoFin;
+  }
+
+  amortizacionData = rows;
+
+  // Actualizar KPIs
+  var el;
+  el = document.getElementById('fin-kpi-prestamo'); if (el) { el.textContent = fmt(monto); }
+  el = document.getElementById('fin-kpi-cuota'); if (el) { el.textContent = fmt(cuota); }
+  el = document.getElementById('fin-kpi-intereses'); if (el) { el.textContent = fmt(totalInteres); }
+  el = document.getElementById('fin-cuota-display'); if (el) { el.value = fmt(cuota); }
+
+  renderAmortizacion(rows);
+}
+
+function renderAmortizacion(rows) {
+  var tbody = document.getElementById('amort-tbody');
+  var tfoot = document.getElementById('amort-tfoot');
+  if (!tbody) { return; }
+
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--dim);padding:30px">Ingrese los parámetros del préstamo</td></tr>';
+    if (tfoot) { tfoot.innerHTML = ''; }
+    return;
+  }
+
+  var html = '';
+  var totCap = 0, totInt = 0, totCuota = 0;
+
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    totCap += r.capital;
+    totInt += r.interes;
+    totCuota += r.cuota;
+
+    html += '<tr>' +
+      '<td class="mono dim">' + r.n + '</td>' +
+      '<td class="dim">' + r.mes + '</td>' +
+      '<td class="mono">' + fmtN(r.saldoIni) + '</td>' +
+      '<td class="mono">' + fmtN(r.capital) + '</td>' +
+      '<td class="red-val">' + fmtN(r.interes) + '</td>' +
+      '<td class="gold">' + fmtN(r.cuota) + '</td>' +
+      '<td class="mono">' + fmtN(r.saldoFin) + '</td>' +
+      '</tr>';
+  }
+
+  tbody.innerHTML = html;
+
+  if (tfoot) {
+    tfoot.innerHTML = '<tr>' +
+      '<td colspan="3">TOTALES (' + rows.length + ' cuotas)</td>' +
+      '<td>' + fmtN(totCap) + '</td>' +
+      '<td>' + fmtN(totInt) + '</td>' +
+      '<td>' + fmtN(totCuota) + '</td>' +
+      '<td>—</td>' +
+      '</tr>';
+  }
+}
+
+function exportAmortCSV() {
+  if (!amortizacionData || amortizacionData.length === 0) { showToast('⚠️ Sin datos de amortización', 'error'); return; }
+  var rows = [['N°','Mes','Saldo Inicial','Capital','Interés','Cuota','Saldo Final']];
+  for (var i = 0; i < amortizacionData.length; i++) {
+    var r = amortizacionData[i];
+    rows.push([r.n, r.mes, r.saldoIni.toFixed(2), r.capital.toFixed(2), r.interes.toFixed(2), r.cuota.toFixed(2), r.saldoFin.toFixed(2)]);
+  }
+  downloadCSV(rows, 'MAE_Amortizacion.csv');
+}
+
+// ══════════════════════════════════════════════════════
+//  FASE 2 — DATOS
+// ══════════════════════════════════════════════════════
+
+var productosData = [
+  {id:1,nombre:'Mae Burger Clásica',cat:'Hamburguesas',precio:15,costo:6.5,emoji:'🍔',stock:50},
+  {id:2,nombre:'Mae Burger Doble',cat:'Hamburguesas',precio:20,costo:9,emoji:'🍔',stock:40},
+  {id:3,nombre:'Mae Burger Especial',cat:'Hamburguesas',precio:23,costo:10.5,emoji:'🍔',stock:35},
+  {id:4,nombre:'Mae Burger Premium',cat:'Hamburguesas',precio:28,costo:13,emoji:'🥩',stock:30},
+  {id:5,nombre:'Mae Burger Deluxe',cat:'Hamburguesas',precio:35,costo:16,emoji:'👑',stock:25},
+  {id:6,nombre:'Papas Fritas',cat:'Acompañamientos',precio:8,costo:2.5,emoji:'🍟',stock:100},
+  {id:7,nombre:'Papas con Queso',cat:'Acompañamientos',precio:12,costo:4,emoji:'🧀',stock:80},
+  {id:8,nombre:'Aros de Cebolla',cat:'Acompañamientos',precio:10,costo:3.5,emoji:'🧅',stock:60},
+  {id:9,nombre:'Gaseosa Personal',cat:'Bebidas',precio:5,costo:1.5,emoji:'🥤',stock:200},
+  {id:10,nombre:'Limonada Frozen',cat:'Bebidas',precio:8,costo:2,emoji:'🍋',stock:100},
+  {id:11,nombre:'Agua Mineral',cat:'Bebidas',precio:3,costo:0.8,emoji:'💧',stock:150},
+  {id:12,nombre:'Combo Clásico',cat:'Combos',precio:22,costo:9.5,emoji:'🎯',stock:999}
+];
+
+var cartItems = [];
+var pagoMetodo = 'efectivo';
+var ventasHistorial = [];
+var ventaCounter = 1;
+
+var kardexData = [
+  {id:1,nombre:'Carne de res 90/10',cat:'Carnes',unidad:'kg',stock:25,min:10,max:50,costo:22},
+  {id:2,nombre:'Pan brioche',cat:'Panadería',unidad:'und',stock:120,min:50,max:200,costo:0.8},
+  {id:3,nombre:'Queso cheddar',cat:'Lácteos',unidad:'kg',stock:8,min:5,max:20,costo:18},
+  {id:4,nombre:'Lechuga romana',cat:'Vegetales',unidad:'kg',stock:6,min:3,max:15,costo:3.5},
+  {id:5,nombre:'Tomate fresco',cat:'Vegetales',unidad:'kg',stock:8,min:4,max:20,costo:2.5},
+  {id:6,nombre:'Cebolla morada',cat:'Vegetales',unidad:'kg',stock:5,min:3,max:12,costo:2},
+  {id:7,nombre:'Papas para freír (5kg)',cat:'Vegetales',unidad:'bolsa',stock:12,min:5,max:25,costo:18},
+  {id:8,nombre:'Ketchup industrial 4L',cat:'Salsas',unidad:'und',stock:4,min:2,max:10,costo:22},
+  {id:9,nombre:'Mayonesa industrial 4L',cat:'Salsas',unidad:'und',stock:3,min:2,max:8,costo:26},
+  {id:10,nombre:'Aceite vegetal 5L',cat:'Salsas',unidad:'und',stock:5,min:3,max:12,costo:32},
+  {id:11,nombre:'Gaseosa 1.5L (caja x12)',cat:'Bebidas',unidad:'caja',stock:8,min:4,max:20,costo:60},
+  {id:12,nombre:'Agua mineral 625ml (cx24)',cat:'Bebidas',unidad:'caja',stock:5,min:2,max:10,costo:36},
+  {id:13,nombre:'Bacon ahumado',cat:'Carnes',unidad:'kg',stock:6,min:3,max:15,costo:28},
+  {id:14,nombre:'Detergente industrial',cat:'Limpieza',unidad:'und',stock:3,min:2,max:8,costo:25},
+  {id:15,nombre:'Servilletas (x500)',cat:'Limpieza',unidad:'paq',stock:6,min:3,max:15,costo:8}
+];
+var kardexMovsData = [];
+var movCounter = 1;
+var invModalTipo = 'entrada';
+
+var facturasData = [];
+var facItems = [{desc:'Mae Burger Clásica',cant:1,precio:15,desc2:0}];
+var facCounters = {boleta:1,factura:1};
+
+var eerrCache = [];
+var flujoCache = [];
+
+// ══════════════════════════════════════════════════════
+//  ESF — ESTADO DE SITUACIÓN FINANCIERA
+// ══════════════════════════════════════════════════════
+
+function renderESF() {
+  var totalTang = calcTotalTang();
+  var totalIntang = calcTotalIntang();
+  var capTrabajo = 26025;
+  var depAcum = calcDepTang();
+  var amortAcum = 0;
+  for (var i = 0; i < intangiblesData.length; i++) {
+    var it = intangiblesData[i];
+    if (it.vida < 99) { amortAcum += (it.cant * it.precio) / it.vida; }
+  }
+  var activoCorriente = capTrabajo;
+  var activoNCTang = totalTang;
+  var activoNCIntang = totalIntang;
+  var totalActivo = activoCorriente + activoNCTang + activoNCIntang;
+  var totalPasivo = 34470;
+  var capitalSocial = 80429;
+  var utilidad = totalActivo - totalPasivo - capitalSocial;
+  var totalPatrimonio = capitalSocial + utilidad;
+  var totalPasPat = totalPasivo + totalPatrimonio;
+  var diff = totalActivo - totalPasPat;
+
+  // Activo tbody
+  var aRows = '<tr><td style="padding-left:6px;color:var(--dim);font-size:11px;font-weight:700">ACTIVO CORRIENTE</td><td></td></tr>';
+  aRows += '<tr><td style="padding-left:20px">Caja y Bancos (Capital de Trabajo)</td><td class="gold mono">' + fmtN(activoCorriente) + '</td></tr>';
+  aRows += '<tr><td style="padding-left:6px;color:var(--dim);font-size:11px;font-weight:700">ACTIVO NO CORRIENTE</td><td></td></tr>';
+  aRows += '<tr><td style="padding-left:20px">Activos Tangibles (' + tangiblesData.length + ' ítems)</td><td class="gold mono">' + fmtN(activoNCTang) + '</td></tr>';
+  aRows += '<tr><td style="padding-left:20px">Activos Intangibles</td><td class="gold mono">' + fmtN(activoNCIntang) + '</td></tr>';
+  aRows += '<tr><td style="padding-left:20px;color:#E87070">(−) Dep./Amort. Año 1</td><td class="mono" style="color:#E87070">−' + fmtN(depAcum + amortAcum) + '</td></tr>';
+  document.getElementById('esf-activo-tbody').innerHTML = aRows;
+  document.getElementById('esf-activo-tfoot').innerHTML = '<tr><td>TOTAL ACTIVO</td><td>' + fmtN(totalActivo) + '</td></tr>';
+
+  var pRows = '<tr><td style="padding-left:6px;color:var(--dim);font-size:11px;font-weight:700">PASIVO NO CORRIENTE</td><td></td></tr>';
+  pRows += '<tr><td style="padding-left:20px">Préstamo bancario (36 meses)</td><td class="gold mono">' + fmtN(totalPasivo) + '</td></tr>';
+  document.getElementById('esf-pasivo-tbody').innerHTML = pRows;
+  document.getElementById('esf-pasivo-tfoot').innerHTML = '<tr><td>TOTAL PASIVO</td><td>' + fmtN(totalPasivo) + '</td></tr>';
+
+  var ptRows = '<tr><td style="padding-left:20px">Capital Social (Aporte propio)</td><td class="gold mono">' + fmtN(capitalSocial) + '</td></tr>';
+  ptRows += '<tr><td style="padding-left:20px">Utilidad Acumulada</td><td class="gold mono">' + fmtN(utilidad) + '</td></tr>';
+  document.getElementById('esf-pat-tbody').innerHTML = ptRows;
+  document.getElementById('esf-pat-tfoot').innerHTML = '<tr><td>TOTAL PATRIMONIO</td><td>' + fmtN(totalPatrimonio) + '</td></tr>';
+
+  var el;
+  el = document.getElementById('esf-kpi-activo'); if (el) { el.textContent = fmt(totalActivo); }
+  el = document.getElementById('esf-kpi-pasivo'); if (el) { el.textContent = fmt(totalPasivo); }
+  el = document.getElementById('esf-kpi-pat'); if (el) { el.textContent = fmt(totalPatrimonio); }
+
+  var alertEl = document.getElementById('esf-alert');
+  var badge = document.getElementById('esf-badge');
+  if (Math.abs(diff) < 0.01) {
+    alertEl.style.display = 'block';
+    alertEl.style.background = 'rgba(40,167,69,.12)';
+    alertEl.style.border = '1px solid var(--green)';
+    alertEl.style.color = 'var(--green-l)';
+    alertEl.textContent = '✅ BALANCE CUADRA — Activo = Pasivo + Patrimonio = S/ ' + fmtN(totalActivo);
+    if (badge) { badge.textContent = '✅ Balance OK'; badge.style.background = 'rgba(40,167,69,.2)'; badge.style.color = 'var(--green-l)'; }
+  } else {
+    alertEl.style.display = 'block';
+    alertEl.style.background = 'rgba(204,41,41,.12)';
+    alertEl.style.border = '1px solid var(--red)';
+    alertEl.style.color = '#E87070';
+    alertEl.textContent = '⚠️ DIFERENCIA: S/ ' + fmtN(Math.abs(diff)) + ' — Revisar activos';
+    if (badge) { badge.textContent = '⚠️ Revisar'; badge.style.background = 'rgba(204,41,41,.2)'; badge.style.color = '#E87070'; }
+  }
+  showToast(Math.abs(diff) < 0.01 ? '✅ Balance verificado correctamente' : '⚠️ Diferencia S/ ' + fmtN(Math.abs(diff)), Math.abs(diff) < 0.01 ? 'success' : 'error');
+}
+
+function exportESFCSV() {
+  var totalTang = calcTotalTang();
+  var totalIntang = calcTotalIntang();
+  var rows = [['ESTADO DE SITUACIÓN FINANCIERA — MAE BURGER'], [''], ['ACTIVO',''],
+    ['Caja y Bancos', 26025], ['Activos Tangibles', totalTang], ['Activos Intangibles', totalIntang],
+    [''], ['PASIVO',''], ['Préstamo bancario', 34470],
+    [''], ['PATRIMONIO',''], ['Capital Social', 80429],
+    [''], ['TOTAL INVERSIÓN', 114899]];
+  downloadCSV(rows, 'MAE_ESF.csv');
+}
+
+// ══════════════════════════════════════════════════════
+//  ECOMMERCE + POS
+// ══════════════════════════════════════════════════════
+
+function ecTab(tab) {
+  var tabs = ['pos','catalogo','historial'];
+  for (var i = 0; i < tabs.length; i++) {
+    var el = document.getElementById('ec-' + tabs[i]);
+    var tel = document.getElementById('ec-tab-' + tabs[i]);
+    if (el) { el.style.display = tabs[i] === tab ? '' : 'none'; }
+    if (tel) { tel.className = 'tab' + (tabs[i] === tab ? ' active' : ''); }
+  }
+  if (tab === 'historial') { renderHistorial(); }
+  if (tab === 'catalogo') { renderCatalogo(); }
+}
+
+function renderPOSGrid() {
+  var grid = document.getElementById('pos-grid');
+  if (!grid) { return; }
+  var html = '';
+  for (var i = 0; i < productosData.length; i++) {
+    var p = productosData[i];
+    html += '<div onclick="addToCart(' + p.id + ')" style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px;text-align:center;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor=\'var(--gold)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' +
+      '<div style="font-size:26px;margin-bottom:5px">' + p.emoji + '</div>' +
+      '<div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px;line-height:1.2">' + p.nombre + '</div>' +
+      '<div style="font-family:monospace;font-size:15px;color:var(--gold);font-weight:700">S/ ' + p.precio.toFixed(2) + '</div>' +
+      '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+function renderCatalogo() {
+  var tbody = document.getElementById('prod-tbody');
+  if (!tbody) { return; }
+  var html = '';
+  for (var i = 0; i < productosData.length; i++) {
+    var p = productosData[i];
+    var margen = ((p.precio - p.costo) / p.precio * 100).toFixed(1);
+    var igvVal = (p.precio * 0.18).toFixed(2);
+    var precioIgv = (p.precio * 1.18).toFixed(2);
+    html += '<tr><td class="mono dim">' + p.id + '</td>' +
+      '<td>' + p.emoji + ' ' + p.nombre + '</td>' +
+      '<td class="dim">' + p.cat + '</td>' +
+      '<td class="gold mono">S/ ' + p.precio.toFixed(2) + '</td>' +
+      '<td class="mono" style="color:#E87070">S/ ' + igvVal + '</td>' +
+      '<td class="mono">S/ ' + precioIgv + '</td>' +
+      '<td class="mono">S/ ' + p.costo.toFixed(2) + '</td>' +
+      '<td class="mono" style="color:' + (parseFloat(margen) > 45 ? 'var(--green-l)' : 'var(--gold)') + '">' + margen + '%</td>' +
+      '<td><button class="t-btn" style="padding:3px 8px;font-size:11px;margin-right:3px" onclick="editProducto(' + p.id + ')">✏</button>' +
+      '<button class="t-btn" style="padding:3px 8px;font-size:11px" onclick="addToCart(' + p.id + ')">➕</button></td>' +
+      '</tr>';
+  }
+  tbody.innerHTML = html || '<tr><td colspan="9" style="text-align:center;color:var(--dim);padding:20px">Sin productos</td></tr>';
+}
+
+var editProdIdx = null;
+var nextProdId = 13;
+
+function openProdModal() {
+  editProdIdx = null;
+  var t = document.getElementById('modal-prod-title'); if (t) { t.textContent = '➕ Nuevo Producto'; }
+  var e;
+  e = document.getElementById('prod-m-nombre'); if (e) { e.value = ''; }
+  e = document.getElementById('prod-m-cat'); if (e) { e.value = 'Hamburguesas'; }
+  e = document.getElementById('prod-m-emoji'); if (e) { e.value = '🍔'; }
+  e = document.getElementById('prod-m-precio'); if (e) { e.value = '15'; }
+  e = document.getElementById('prod-m-costo'); if (e) { e.value = '6'; }
+  recalcProdModal();
+  openModal('modal-prod');
+}
+
+function editProducto(id) {
+  var p = null;
+  for (var i = 0; i < productosData.length; i++) { if (productosData[i].id === id) { p = productosData[i]; editProdIdx = i; break; } }
+  if (!p) { return; }
+  var t = document.getElementById('modal-prod-title'); if (t) { t.textContent = '✏️ Editar Producto'; }
+  var e;
+  e = document.getElementById('prod-m-nombre'); if (e) { e.value = p.nombre; }
+  e = document.getElementById('prod-m-cat'); if (e) { e.value = p.cat; }
+  e = document.getElementById('prod-m-emoji'); if (e) { e.value = p.emoji; }
+  e = document.getElementById('prod-m-precio'); if (e) { e.value = p.precio; }
+  e = document.getElementById('prod-m-costo'); if (e) { e.value = p.costo; }
+  recalcProdModal();
+  openModal('modal-prod');
+}
+
+function recalcProdModal() {
+  var precio = parseFloat(document.getElementById('prod-m-precio') ? document.getElementById('prod-m-precio').value : 0) || 0;
+  var costo = parseFloat(document.getElementById('prod-m-costo') ? document.getElementById('prod-m-costo').value : 0) || 0;
+  var margen = precio > 0 ? ((precio - costo) / precio * 100).toFixed(1) : '0';
+  var igv = (precio * 0.18).toFixed(2);
+  var e;
+  e = document.getElementById('prod-m-margen'); if (e) { e.value = margen + '%'; }
+  e = document.getElementById('prod-m-igv'); if (e) { e.value = 'S/ ' + igv; }
+}
+
+function saveProducto() {
+  var nombre = document.getElementById('prod-m-nombre') ? document.getElementById('prod-m-nombre').value.trim() : '';
+  if (!nombre) { showToast('⚠️ Nombre obligatorio', 'error'); return; }
+  var item = {
+    id: editProdIdx !== null ? productosData[editProdIdx].id : nextProdId++,
+    nombre: nombre,
+    cat: document.getElementById('prod-m-cat') ? document.getElementById('prod-m-cat').value : 'Otros',
+    emoji: document.getElementById('prod-m-emoji') ? document.getElementById('prod-m-emoji').value : '🍽',
+    precio: parseFloat(document.getElementById('prod-m-precio') ? document.getElementById('prod-m-precio').value : 0) || 0,
+    costo: parseFloat(document.getElementById('prod-m-costo') ? document.getElementById('prod-m-costo').value : 0) || 0,
+    stock: 999
+  };
+  if (editProdIdx !== null) { productosData[editProdIdx] = item; showToast('✅ Producto actualizado', 'success'); }
+  else { productosData.push(item); showToast('✅ Producto agregado', 'success'); }
+  closeModal('modal-prod');
+  renderCatalogo();
+  renderPOSGrid();
+}
+
+function exportProdCSV() {
+  var rows = [['#','Nombre','Categoría','Precio','Costo','Margen%','IGV']];
+  for (var i = 0; i < productosData.length; i++) {
+    var p = productosData[i];
+    var m = ((p.precio - p.costo) / p.precio * 100).toFixed(1);
+    rows.push([p.id, p.nombre, p.cat, p.precio.toFixed(2), p.costo.toFixed(2), m, (p.precio * 0.18).toFixed(2)]);
+  }
+  downloadCSV(rows, 'MAE_Productos.csv');
+}
+
+function exportVentasCSV() {
+  var rows = [['#','Hora','Productos','Subtotal','IGV','Total','Pago']];
+  for (var i = 0; i < ventasHistorial.length; i++) {
+    var v = ventasHistorial[i];
+    rows.push([v.id, v.hora, v.items, v.sub.toFixed(2), v.igv.toFixed(2), v.total.toFixed(2), v.pago]);
+  }
+  downloadCSV(rows, 'MAE_Ventas.csv');
+}
+
+
+
+function posSearch(q) {
+  var grid = document.getElementById('pos-grid');
+  if (!grid) { return; }
+  var filtered = productosData.filter(function(p) {
+    return !q || p.nombre.toLowerCase().indexOf(q.toLowerCase()) >= 0 || p.cat.toLowerCase().indexOf(q.toLowerCase()) >= 0;
+  });
+  var html = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var p = filtered[i];
+    html += '<div onclick="addToCart(' + p.id + ')" style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px;text-align:center;cursor:pointer" onmouseover="this.style.borderColor=\'var(--gold)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' +
+      '<div style="font-size:26px">' + p.emoji + '</div>' +
+      '<div style="font-size:11px;font-weight:600;color:var(--text);margin:4px 0">' + p.nombre + '</div>' +
+      '<div style="font-family:monospace;font-size:15px;color:var(--gold);font-weight:700">S/ ' + p.precio.toFixed(2) + '</div>' +
+      '</div>';
+  }
+  grid.innerHTML = html || '<div style="color:var(--dim);padding:20px;text-align:center">Sin resultados</div>';
+}
+
+function addToCart(pid) {
+  var p = null;
+  for (var i = 0; i < productosData.length; i++) { if (productosData[i].id === pid) { p = productosData[i]; break; } }
+  if (!p) { return; }
+  var found = false;
+  for (var j = 0; j < cartItems.length; j++) {
+    if (cartItems[j].id === pid) { cartItems[j].qty++; found = true; break; }
+  }
+  if (!found) { cartItems.push({id:p.id,nombre:p.nombre,emoji:p.emoji,precio:p.precio,qty:1}); }
+  renderCart();
+}
+
+function removeFromCart(pid) {
+  for (var i = 0; i < cartItems.length; i++) {
+    if (cartItems[i].id === pid) {
+      if (cartItems[i].qty > 1) { cartItems[i].qty--; } else { cartItems.splice(i, 1); }
+      break;
+    }
+  }
+  renderCart();
+}
+
+function clearCart() { cartItems = []; renderCart(); }
+
+function renderCart() {
+  var el = document.getElementById('cart-items');
+  if (!el) { return; }
+  if (cartItems.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--dim);font-size:12px">🛒 Carrito vacío</div>';
+  } else {
+    var html = '';
+    for (var i = 0; i < cartItems.length; i++) {
+      var c = cartItems[i];
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">' +
+        '<span style="font-size:18px">' + c.emoji + '</span>' +
+        '<div style="flex:1"><div style="font-size:12px;font-weight:500">' + c.nombre + '</div>' +
+        '<div style="font-size:11px;color:var(--muted)">S/ ' + c.precio.toFixed(2) + ' c/u</div></div>' +
+        '<div style="display:flex;align-items:center;gap:5px">' +
+        '<button onclick="removeFromCart(' + c.id + ')" style="background:var(--surface3);border:none;color:var(--text);width:20px;height:20px;border-radius:3px;cursor:pointer">−</button>' +
+        '<span class="mono" style="min-width:18px;text-align:center;font-size:13px">' + c.qty + '</span>' +
+        '<button onclick="addToCart(' + c.id + ')" style="background:var(--surface3);border:none;color:var(--text);width:20px;height:20px;border-radius:3px;cursor:pointer">+</button>' +
+        '</div>' +
+        '<span class="mono" style="color:var(--gold);min-width:56px;text-align:right;font-size:12px">S/ ' + (c.precio * c.qty).toFixed(2) + '</span>' +
+        '</div>';
+    }
+    el.innerHTML = html;
+  }
+  var sub = cartItems.reduce(function(s, c) { return s + c.precio * c.qty; }, 0);
+  var igv = sub * 0.18;
+  var total = sub + igv;
+  var eSub = document.getElementById('cart-sub'); if (eSub) { eSub.textContent = 'S/ ' + sub.toFixed(2); }
+  var eIgv = document.getElementById('cart-igv'); if (eIgv) { eIgv.textContent = 'S/ ' + igv.toFixed(2); }
+  var eTot = document.getElementById('cart-total'); if (eTot) { eTot.textContent = 'S/ ' + total.toFixed(2); }
+}
+
+function setPago(m) {
+  pagoMetodo = m;
+  var metodos = ['efectivo','tarjeta','yape'];
+  for (var i = 0; i < metodos.length; i++) {
+    var b = document.getElementById('pay-' + metodos[i]);
+    if (b) { b.style.borderColor = metodos[i] === m ? 'var(--gold)' : 'var(--border)'; b.style.color = metodos[i] === m ? 'var(--gold)' : 'var(--muted)'; }
+  }
+}
+
+function calcVuelto() {
+  var sub = cartItems.reduce(function(s, c) { return s + c.precio * c.qty; }, 0);
+  var total = sub * 1.18;
+  var rec = parseFloat(document.getElementById('pos-recibido').value) || 0;
+  var vuelto = rec - total;
+  var el = document.getElementById('pos-vuelto');
+  if (el) { el.value = vuelto >= 0 ? 'S/ ' + vuelto.toFixed(2) : '—'; el.style.color = vuelto >= 0 ? 'var(--green-l)' : '#E87070'; }
+}
+
+function procesarVenta() {
+  if (cartItems.length === 0) { showToast('⚠️ El carrito está vacío', 'error'); return; }
+  var sub = cartItems.reduce(function(s, c) { return s + c.precio * c.qty; }, 0);
+  var igv = sub * 0.18;
+  var total = sub + igv;
+  var venta = {
+    id: ventaCounter++,
+    hora: new Date().toLocaleTimeString('es-PE'),
+    items: cartItems.map(function(c) { return c.emoji + ' ' + c.nombre + ' x' + c.qty; }).join(', '),
+    sub: sub, igv: igv, total: total,
+    pago: pagoMetodo, estado: '✅ Cobrado'
+  };
+  ventasHistorial.unshift(venta);
+  showToast('✅ Venta #' + venta.id + ' — Total: S/ ' + total.toFixed(2), 'success');
+  clearCart();
+  var recEl = document.getElementById('pos-recibido'); if (recEl) { recEl.value = ''; }
+  var vuelEl = document.getElementById('pos-vuelto'); if (vuelEl) { vuelEl.value = ''; }
+  updateVentasKPIs();
+}
+
+function updateVentasKPIs() {
+  var totalHoy = ventasHistorial.reduce(function(s, v) { return s + v.total; }, 0);
+  var igvT = ventasHistorial.reduce(function(s, v) { return s + v.igv; }, 0);
+  var avg = ventasHistorial.length > 0 ? totalHoy / ventasHistorial.length : 0;
+  var e;
+  e = document.getElementById('h-total'); if (e) { e.textContent = fmt(totalHoy); }
+  e = document.getElementById('h-tx'); if (e) { e.textContent = ventasHistorial.length; }
+  e = document.getElementById('h-avg'); if (e) { e.textContent = fmt(avg); }
+  e = document.getElementById('h-igv'); if (e) { e.textContent = fmt(igvT); }
+}
+
+function renderHistorial() {
+  var tbody = document.getElementById('ventas-tbody');
+  if (!tbody) { return; }
+  updateVentasKPIs();
+  if (ventasHistorial.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--dim);padding:30px">Sin ventas registradas</td></tr>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < ventasHistorial.length; i++) {
+    var v = ventasHistorial[i];
+    html += '<tr><td class="mono dim">#' + v.id + '</td><td class="dim">' + v.hora + '</td>' +
+      '<td style="font-size:12px;max-width:220px">' + v.items + '</td>' +
+      '<td class="mono">S/ ' + v.sub.toFixed(2) + '</td>' +
+      '<td class="mono" style="color:#E87070">S/ ' + v.igv.toFixed(2) + '</td>' +
+      '<td class="gold mono">S/ ' + v.total.toFixed(2) + '</td>' +
+      '<td class="dim">' + v.pago + '</td></tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════
+//  INVENTARIO / KARDEX
+// ══════════════════════════════════════════════════════
+
+function invTab(tab) {
+  var tabs = ['stock','movs','alertas'];
+  for (var i = 0; i < tabs.length; i++) {
+    var el = document.getElementById('inv-' + tabs[i]);
+    var tel = document.getElementById('inv-tab-' + tabs[i]);
+    if (el) { el.style.display = tabs[i] === tab ? '' : 'none'; }
+    if (tel) { tel.className = 'tab' + (tabs[i] === tab ? ' active' : ''); }
+  }
+  if (tab === 'movs') { renderMovimientos(); }
+  if (tab === 'alertas') { renderAlertas(); }
+}
+
+function renderInventario() {
+  var tbody = document.getElementById('inv-tbody');
+  var tfoot = document.getElementById('inv-tfoot');
+  if (!tbody) { return; }
+  var totalValor = 0, alertCount = 0;
+  var html = '';
+  for (var i = 0; i < kardexData.length; i++) {
+    var k = kardexData[i];
+    var valor = k.stock * k.costo;
+    totalValor += valor;
+    var bajo = k.stock <= k.min;
+    var critico = k.stock < k.min * 0.5;
+    if (bajo) { alertCount++; }
+    var estado = critico ? '<span style="color:#E87070;font-weight:700">🔴 Crítico</span>' : bajo ? '<span style="color:var(--gold);font-weight:600">🟡 Bajo</span>' : '<span style="color:var(--green-l)">🟢 OK</span>';
+    html += '<tr style="' + (bajo ? 'background:rgba(204,41,41,.04)' : '') + '">' +
+      '<td class="mono dim">' + k.id + '</td>' +
+      '<td style="font-weight:500">' + k.nombre + '</td>' +
+      '<td class="dim">' + k.cat + '</td>' +
+      '<td class="mono">' + k.unidad + '</td>' +
+      '<td class="mono" style="font-weight:700;color:' + (bajo ? '#E87070' : 'var(--text)') + '">' + k.stock + '</td>' +
+      '<td class="mono">' + k.min + '</td>' +
+      '<td class="mono">' + k.max + '</td>' +
+      '<td class="mono">S/ ' + k.costo.toFixed(2) + '</td>' +
+      '<td class="gold mono">S/ ' + valor.toFixed(2) + '</td>' +
+      '<td>' + estado + '</td>' +
+      '</tr>';
+  }
+  tbody.innerHTML = html;
+  tfoot.innerHTML = '<tr><td colspan="8">VALOR TOTAL EN STOCK</td><td>S/ ' + totalValor.toFixed(2) + '</td><td></td></tr>';
+  var e;
+  e = document.getElementById('inv-kpi-items'); if (e) { e.textContent = kardexData.length; }
+  e = document.getElementById('inv-kpi-alertas'); if (e) { e.textContent = alertCount; }
+  e = document.getElementById('inv-kpi-valor'); if (e) { e.textContent = fmt(totalValor); }
+  e = document.getElementById('inv-kpi-movs'); if (e) { e.textContent = kardexMovsData.length; }
+}
+
+function filterInventario(q) {
+  var rows = document.querySelectorAll('#inv-tbody tr');
+  for (var i = 0; i < rows.length; i++) {
+    rows[i].style.display = !q || rows[i].textContent.toLowerCase().indexOf(q.toLowerCase()) >= 0 ? '' : 'none';
+  }
+}
+
+function openInvModal(tipo) {
+  invModalTipo = tipo;
+  var title = document.getElementById('inv-modal-title');
+  if (title) { title.textContent = tipo === 'entrada' ? '📥 Registrar Entrada' : '📤 Registrar Salida'; }
+  var sel = document.getElementById('inv-modal-insumo');
+  if (sel) {
+    sel.innerHTML = kardexData.map(function(k) {
+      return '<option value="' + k.id + '">' + k.nombre + ' (stock: ' + k.stock + ' ' + k.unidad + ')</option>';
+    }).join('');
+  }
+  openModal('modal-inv');
+}
+
+function saveMovInv() {
+  var idStr = document.getElementById('inv-modal-insumo') ? document.getElementById('inv-modal-insumo').value : '';
+  var id = parseInt(idStr);
+  var cant = parseFloat(document.getElementById('inv-modal-cant') ? document.getElementById('inv-modal-cant').value : 0) || 0;
+  var motivo = document.getElementById('inv-modal-motivo') ? document.getElementById('inv-modal-motivo').value.trim() : '';
+  if (!id || cant <= 0) { showToast('⚠️ Datos inválidos', 'error'); return; }
+  var k = null;
+  for (var i = 0; i < kardexData.length; i++) { if (kardexData[i].id === id) { k = kardexData[i]; break; } }
+  if (!k) { return; }
+  var saldoAnt = k.stock;
+  if (invModalTipo === 'entrada') {
+    k.stock += cant;
+  } else {
+    if (k.stock < cant) { showToast('⚠️ Stock insuficiente (' + k.stock + ' ' + k.unidad + ' disponibles)', 'error'); return; }
+    k.stock -= cant;
+  }
+  kardexMovsData.unshift({
+    id: movCounter++,
+    hora: new Date().toLocaleTimeString('es-PE'),
+    nombre: k.nombre,
+    tipo: invModalTipo === 'entrada' ? '📥 Entrada' : '📤 Salida',
+    cant: cant,
+    saldoAnt: saldoAnt,
+    saldoNuevo: k.stock,
+    motivo: motivo || 'Sin especificar'
+  });
+  closeModal('modal-inv');
+  renderInventario();
+  showToast((invModalTipo === 'entrada' ? '📥 Entrada' : '📤 Salida') + ' registrada: ' + cant + ' ' + k.unidad + ' de ' + k.nombre, 'success');
+}
+
+function renderMovimientos() {
+  var tbody = document.getElementById('inv-movs-tbody');
+  if (!tbody) { return; }
+  if (kardexMovsData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--dim);padding:30px">Sin movimientos registrados</td></tr>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < kardexMovsData.length; i++) {
+    var m = kardexMovsData[i];
+    html += '<tr><td class="mono dim">' + m.id + '</td><td class="dim">' + m.hora + '</td>' +
+      '<td>' + m.nombre + '</td><td style="font-weight:600">' + m.tipo + '</td>' +
+      '<td class="mono">' + m.cant + '</td><td class="mono">' + m.saldoAnt + '</td>' +
+      '<td class="mono">' + m.saldoNuevo + '</td><td class="dim">' + m.motivo + '</td></tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+function renderAlertas() {
+  var el = document.getElementById('inv-alertas-list');
+  if (!el) { return; }
+  var bajos = kardexData.filter(function(k) { return k.stock <= k.min; });
+  if (bajos.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--green-l);font-size:15px">✅ Sin alertas — Stock suficiente en todos los insumos</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < bajos.length; i++) {
+    var k = bajos[i];
+    var critico = k.stock < k.min * 0.5;
+    html += '<div style="background:' + (critico ? 'rgba(204,41,41,.1)' : 'rgba(255,193,7,.07)') + ';border:1px solid ' + (critico ? 'var(--red)' : 'var(--gold)') + ';border-radius:8px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:10px">' +
+      '<span style="font-size:26px">' + (critico ? '🔴' : '🟡') + '</span>' +
+      '<div style="flex:1">' +
+      '<div style="font-weight:700;font-size:13px;color:' + (critico ? '#E87070' : 'var(--gold)') + '">' + k.nombre + '</div>' +
+      '<div style="font-size:12px;color:var(--muted)">Stock: <strong>' + k.stock + ' ' + k.unidad + '</strong> — Mín: ' + k.min + ' — Reponer: <strong>' + (k.max - k.stock) + ' ' + k.unidad + '</strong></div>' +
+      '</div>' +
+      '<button class="t-btn" onclick="openInvModal(\'entrada\')" style="white-space:nowrap">📥 Reabastecer</button>' +
+      '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function exportInvCSV() {
+  var rows = [['#','Insumo','Categoría','Unidad','Stock','Mín','Máx','Costo','Valor']];
+  for (var i = 0; i < kardexData.length; i++) {
+    var k = kardexData[i];
+    rows.push([k.id, k.nombre, k.cat, k.unidad, k.stock, k.min, k.max, k.costo.toFixed(2), (k.stock * k.costo).toFixed(2)]);
+  }
+  downloadCSV(rows, 'MAE_Inventario.csv');
+}
+
+// ══════════════════════════════════════════════════════
+//  FACTURACIÓN
+// ══════════════════════════════════════════════════════
+
+function facTab(tab) {
+  var tabs = ['nueva','listado','sunat'];
+  for (var i = 0; i < tabs.length; i++) {
+    var el = document.getElementById('fac-' + tabs[i]);
+    var tel = document.getElementById('fac-tab-' + tabs[i]);
+    if (el) { el.style.display = tabs[i] === tab ? '' : 'none'; }
+    if (tel) { tel.className = 'tab' + (tabs[i] === tab ? ' active' : ''); }
+  }
+  if (tab === 'listado') { renderFacListado(); }
+}
+
+function updateFacNum() {
+  var tipo = document.getElementById('fac-tipo') ? document.getElementById('fac-tipo').value : 'boleta';
+  var prefix = tipo === 'boleta' ? 'B001' : 'F001';
+  var num = String(facCounters[tipo]).padStart(5, '0');
+  var el = document.getElementById('fac-num');
+  if (el) { el.value = prefix + '-' + num; }
+}
+
+function addFacItem() {
+  facItems.push({desc:'Producto',cant:1,precio:0,desc2:0});
+  renderFacItems();
+}
+
+function renderFacItems() {
+  var tbody = document.getElementById('fac-items-tbody');
+  if (!tbody) { return; }
+  var html = '';
+  var sub = 0;
+  for (var i = 0; i < facItems.length; i++) {
+    var it = facItems[i];
+    var tot = it.cant * it.precio * (1 - (it.desc2 || 0) / 100);
+    sub += tot;
+    var idx = i;
+    html += '<tr>' +
+      '<td class="mono dim">' + (i + 1) + '</td>' +
+      '<td><input value="' + it.desc + '" onchange="facItems[' + idx + '].desc=this.value;updateFacPreview()" style="background:transparent;border:none;color:var(--text);width:140px;font-family:inherit;font-size:12px"></td>' +
+      '<td><input type="number" value="' + it.cant + '" min="1" onchange="facItems[' + idx + '].cant=+this.value;renderFacItems()" style="background:transparent;border:none;color:var(--text);width:45px;font-family:monospace;font-size:12px"></td>' +
+      '<td><input type="number" value="' + it.precio + '" min="0" onchange="facItems[' + idx + '].precio=+this.value;renderFacItems()" style="background:transparent;border:none;color:var(--gold);width:60px;font-family:monospace;font-size:12px"></td>' +
+      '<td><input type="number" value="' + (it.desc2 || 0) + '" min="0" max="100" onchange="facItems[' + idx + '].desc2=+this.value;renderFacItems()" style="background:transparent;border:none;color:var(--text);width:40px;font-family:monospace;font-size:12px"></td>' +
+      '<td class="mono">S/ ' + tot.toFixed(2) + '</td>' +
+      '<td><button onclick="facItems.splice(' + idx + ',1);renderFacItems()" style="background:none;border:none;color:#E87070;cursor:pointer;font-size:13px">🗑</button></td>' +
+      '</tr>';
+  }
+  tbody.innerHTML = html;
+  var igv = sub * 0.18;
+  var total = sub + igv;
+  var e;
+  e = document.getElementById('fac-sub'); if (e) { e.textContent = 'S/ ' + sub.toFixed(2); }
+  e = document.getElementById('fac-igv'); if (e) { e.textContent = 'S/ ' + igv.toFixed(2); }
+  e = document.getElementById('fac-total'); if (e) { e.textContent = 'S/ ' + total.toFixed(2); }
+  updateFacPreview();
+}
+
+function updateFacPreview() {
+  var el = document.getElementById('fac-preview');
+  if (!el) { return; }
+  var tipo = document.getElementById('fac-tipo') ? document.getElementById('fac-tipo').value : 'boleta';
+  var num = document.getElementById('fac-num') ? document.getElementById('fac-num').value : 'B001-00001';
+  var cliente = document.getElementById('fac-cliente') ? document.getElementById('fac-cliente').value : 'Consumidor Final';
+  var ruc = document.getElementById('fac-ruc') ? document.getElementById('fac-ruc').value : '00000000';
+  var fecha = document.getElementById('fac-fecha') ? document.getElementById('fac-fecha').value : '';
+  var sub = facItems.reduce(function(s, it) { return s + it.cant * it.precio * (1 - (it.desc2 || 0) / 100); }, 0);
+  var igv = sub * 0.18;
+  var total = sub + igv;
+  el.textContent = 'RUC: 20612345678\nMAE BURGER E.I.R.L.\nAv. Ricardo Palma 803 - Trujillo\n' +
+    '──────────────────────\n' +
+    (tipo === 'boleta' ? 'BOLETA DE VENTA' : 'FACTURA') + '\n' + num + '\n' +
+    '──────────────────────\n' +
+    'Fecha: ' + (fecha || new Date().toLocaleDateString('es-PE')) + '\n' +
+    'Cliente: ' + cliente + '\n' +
+    (tipo === 'factura' ? 'RUC: ' + ruc + '\n' : '') +
+    '──────────────────────\n' +
+    facItems.map(function(it) {
+      var tot = it.cant * it.precio * (1 - (it.desc2 || 0) / 100);
+      return it.desc + '\n  ' + it.cant + ' x S/' + it.precio.toFixed(2) + ' = S/' + tot.toFixed(2);
+    }).join('\n') + '\n' +
+    '──────────────────────\n' +
+    'OP. GRAVADA:  S/ ' + sub.toFixed(2) + '\n' +
+    'IGV (18%):    S/ ' + igv.toFixed(2) + '\n' +
+    'TOTAL:        S/ ' + total.toFixed(2) + '\n' +
+    '──────────────────────\n' +
+    'Consulte: www.sunat.gob.pe';
+}
+
+function emitirComprobante() {
+  var tipo = document.getElementById('fac-tipo') ? document.getElementById('fac-tipo').value : 'boleta';
+  var sub = facItems.reduce(function(s, it) { return s + it.cant * it.precio * (1 - (it.desc2 || 0) / 100); }, 0);
+  var igv = sub * 0.18;
+  var total = sub + igv;
+  var num = document.getElementById('fac-num') ? document.getElementById('fac-num').value : '';
+  facturasData.unshift({
+    id: facturasData.length + 1,
+    tipo: tipo,
+    num: num,
+    fecha: new Date().toLocaleDateString('es-PE'),
+    cliente: document.getElementById('fac-cliente') ? document.getElementById('fac-cliente').value : 'Consumidor Final',
+    sub: sub, igv: igv, total: total,
+    estado: '✅ Emitida'
+  });
+  facCounters[tipo]++;
+  updateFacNum();
+  facItems = [{desc:'Mae Burger Clásica',cant:1,precio:15,desc2:0}];
+  renderFacItems();
+  showToast('✅ Comprobante ' + num + ' emitido', 'success');
+}
+
+function renderFacListado() {
+  var tbody = document.getElementById('fac-listado-tbody');
+  if (!tbody) { return; }
+  var totalT = 0, igvT = 0;
+  var boletas = 0, facturas = 0;
+  var html = '';
+  for (var i = 0; i < facturasData.length; i++) {
+    var f = facturasData[i];
+    totalT += f.total; igvT += f.igv;
+    if (f.tipo === 'boleta') { boletas++; } else { facturas++; }
+    html += '<tr><td class="mono dim">' + f.id + '</td>' +
+      '<td style="font-weight:600;color:' + (f.tipo === 'boleta' ? 'var(--green-l)' : 'var(--blue-l)') + '">' + f.tipo.toUpperCase() + '</td>' +
+      '<td class="mono">' + f.num + '</td>' +
+      '<td class="dim">' + f.fecha + '</td>' +
+      '<td>' + f.cliente + '</td>' +
+      '<td class="mono">S/ ' + f.sub.toFixed(2) + '</td>' +
+      '<td class="mono" style="color:#E87070">S/ ' + f.igv.toFixed(2) + '</td>' +
+      '<td class="gold mono">S/ ' + f.total.toFixed(2) + '</td>' +
+      '<td>' + f.estado + '</td></tr>';
+  }
+  tbody.innerHTML = html || '<tr><td colspan="9" style="text-align:center;color:var(--dim);padding:30px">Sin comprobantes emitidos</td></tr>';
+  var e;
+  e = document.getElementById('fac-kpi-total'); if (e) { e.textContent = fmt(totalT); }
+  e = document.getElementById('fac-kpi-boletas'); if (e) { e.textContent = boletas; }
+  e = document.getElementById('fac-kpi-facturas'); if (e) { e.textContent = facturas; }
+  e = document.getElementById('fac-kpi-igv'); if (e) { e.textContent = fmt(igvT); }
+}
+
+function exportFacCSV() {
+  var rows = [['#','Tipo','Comprobante','Fecha','Cliente','Subtotal','IGV','Total','Estado']];
+  for (var i = 0; i < facturasData.length; i++) {
+    var f = facturasData[i];
+    rows.push([f.id, f.tipo, f.num, f.fecha, f.cliente, f.sub.toFixed(2), f.igv.toFixed(2), f.total.toFixed(2), f.estado]);
+  }
+  downloadCSV(rows, 'MAE_Facturas.csv');
+}
+
+function calcCF() {
+  var deb = parseFloat(document.getElementById('cf-debito') ? document.getElementById('cf-debito').value : 0) || 0;
+  var cred = parseFloat(document.getElementById('cf-credito') ? document.getElementById('cf-credito').value : 0) || 0;
+  var saldo = deb - cred;
+  var el = document.getElementById('cf-saldo');
+  if (el) {
+    el.value = saldo >= 0 ? 'Pagar: S/ ' + saldo.toFixed(2) : 'Saldo a favor: S/ ' + Math.abs(saldo).toFixed(2);
+    el.style.color = saldo >= 0 ? '#E87070' : 'var(--green-l)';
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  EERR + FLUJO DE CAJA
+// ══════════════════════════════════════════════════════
+
+function eerrTab(tab) {
+  var tabs = ['eerr','flujo','pe'];
+  for (var i = 0; i < tabs.length; i++) {
+    var el = document.getElementById('eerr-' + tabs[i]);
+    var tel = document.getElementById('eerr-tab-' + tabs[i]);
+    if (el) { el.style.display = tabs[i] === tab ? '' : 'none'; }
+    if (tel) { tel.className = 'tab' + (tabs[i] === tab ? ' active' : ''); }
+  }
+  if (tab === 'pe') { renderPE(); }
+}
+
+function recalcEERR() {
+  var ventas = parseFloat(document.getElementById('p-ventas') ? document.getElementById('p-ventas').value : 80) || 80;
+  var ticket = parseFloat(document.getElementById('p-ticket') ? document.getElementById('p-ticket').value : 23) || 23;
+  var cvPct = parseFloat(document.getElementById('p-cv') ? document.getElementById('p-cv').value : 42) || 42;
+  var otrosG = parseFloat(document.getElementById('p-otros') ? document.getElementById('p-otros').value : 3000) || 3000;
+  var dias = [31,28,31,30,31,30,31,31,30,31,30,31];
+  var cuota = 1144.5;
+  var planillaTotal = 0;
+  for (var i = 0; i < planillaData.length; i++) {
+    var p = planillaData[i];
+    var st = p.cant * p.sueldo;
+    planillaTotal += st + st*0.09 + st/6 + st/12 + st/12;
+  }
+  var alquiler = 4000, servicios = 1200, publi = 800;
+  var depMes = calcDepTang() / 12;
+  var mesesNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  eerrCache = [];
+  flujoCache = [];
+  var saldoAcum = 26025;
+
+  for (var m = 0; m < 12; m++) {
+    var crec = m < 3 ? 1 : m < 6 ? 1.05 : m < 9 ? 1.10 : 1.15;
+    var ingMes = ventas * ticket * dias[m] * crec;
+    var cv = ingMes * (cvPct / 100);
+    var gb = ingMes - cv;
+    var gastosFijos = planillaTotal + alquiler + servicios + publi + otrosG;
+    var ebitda = gb - gastosFijos;
+    var ebit = ebitda - depMes;
+    var eai = ebit - cuota;
+    var ir = Math.max(0, eai * 0.10);
+    var un = eai - ir;
+    var egreOp = cv + gastosFijos;
+    var flujoNeto = ingMes - egreOp - cuota - ir;
+    saldoAcum += flujoNeto;
+    eerrCache.push({mes:mesesNames[m], ing:ingMes, cv:cv, gb:gb, plan:planillaTotal, alq:alquiler, serv:servicios, pub:publi, otros:otrosG, ebitda:ebitda, dep:depMes, ebit:ebit, cuota:cuota, eai:eai, ir:ir, un:un});
+    flujoCache.push({mes:mesesNames[m], saldoIni:saldoAcum-flujoNeto, ing:ingMes, egre:egreOp, cuota:cuota, ir:ir, flujo:flujoNeto, saldoFin:saldoAcum});
+  }
+
+  renderTablaEERR();
+  renderTablaFlujo();
+  renderPE();
+  recalcKPIs();
+
+  var m0 = eerrCache[0];
+  var e;
+  e = document.getElementById('eerr-kpi-ing'); if (e) { e.textContent = fmt(m0.ing); }
+  e = document.getElementById('eerr-kpi-egr'); if (e) { e.textContent = fmt(m0.cv + m0.plan + m0.alq + m0.serv + m0.pub + m0.otros + m0.dep + m0.cuota + m0.ir); }
+  e = document.getElementById('eerr-kpi-util'); if (e) { e.textContent = fmt(m0.un); e.style.color = m0.un >= 0 ? 'var(--gold)' : '#E87070'; }
+  e = document.getElementById('eerr-kpi-margen'); if (e) { e.textContent = (m0.un / m0.ing * 100).toFixed(1) + '%'; }
+}
+
+function renderTablaEERR() {
+  var thead = document.getElementById('eerr-thead');
+  var tbody = document.getElementById('eerr-tbody');
+  if (!thead || !tbody) { return; }
+  var cols = eerrCache.map(function(m) { return m.mes; });
+  thead.innerHTML = '<tr><th>Concepto</th>' + cols.map(function(c) { return '<th>' + c + '</th>'; }).join('') + '<th>TOTAL</th></tr>';
+  var conceptos = [
+    {l:'Ingresos',k:'ing',t:'ingreso'},
+    {l:'(−) Costo Ventas',k:'cv',t:'costo'},
+    {l:'UTILIDAD BRUTA',k:'gb',t:'sub'},
+    {l:'(−) Planilla',k:'plan',t:'gasto'},
+    {l:'(−) Alquiler',k:'alq',t:'gasto'},
+    {l:'(−) Servicios',k:'serv',t:'gasto'},
+    {l:'(−) Publicidad',k:'pub',t:'gasto'},
+    {l:'(−) Otros gastos',k:'otros',t:'gasto'},
+    {l:'EBITDA',k:'ebitda',t:'sub'},
+    {l:'(−) Depreciación',k:'dep',t:'gasto'},
+    {l:'EBIT',k:'ebit',t:'sub'},
+    {l:'(−) G. Financieros',k:'cuota',t:'gasto'},
+    {l:'UTIL. ANTES IR',k:'eai',t:'sub'},
+    {l:'(−) IR (10%)',k:'ir',t:'gasto'},
+    {l:'UTILIDAD NETA',k:'un',t:'total'}
+  ];
+  var html = '';
+  for (var i = 0; i < conceptos.length; i++) {
+    var c = conceptos[i];
+    var vals = eerrCache.map(function(m) { return m[c.k] || 0; });
+    var tot = vals.reduce(function(a, b) { return a + b; }, 0);
+    var isSub = c.t === 'sub' || c.t === 'total';
+    var color = c.t === 'total' ? 'var(--green-l)' : c.t === 'sub' ? 'var(--gold)' : 'var(--text)';
+    html += '<tr style="' + (isSub ? 'background:rgba(232,160,32,.05);font-weight:600' : '') + '">' +
+      '<td style="font-size:12px;white-space:nowrap;color:' + color + '">' + c.l + '</td>' +
+      vals.map(function(v) {
+        return '<td class="mono" style="font-size:11px;color:' + (v < 0 ? '#E87070' : c.t === 'total' ? 'var(--green-l)' : c.t === 'sub' ? 'var(--gold)' : 'var(--muted)') + '">S/' + v.toLocaleString('es-PE',{maximumFractionDigits:0}) + '</td>';
+      }).join('') +
+      '<td class="mono" style="font-size:11px;font-weight:700;color:' + (tot < 0 ? '#E87070' : color) + '">S/' + tot.toLocaleString('es-PE',{maximumFractionDigits:0}) + '</td>' +
+      '</tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+function renderTablaFlujo() {
+  var thead = document.getElementById('flujo-thead');
+  var tbody = document.getElementById('flujo-tbody');
+  if (!thead || !tbody) { return; }
+  var cols = flujoCache.map(function(m) { return m.mes; });
+  thead.innerHTML = '<tr><th>Concepto</th>' + cols.map(function(c) { return '<th>' + c + '</th>'; }).join('') + '</tr>';
+  var conceptos = [
+    {l:'Saldo inicial',k:'saldoIni'},{l:'(+) Ingresos',k:'ing'},{l:'(−) Egresos operativos',k:'egre'},
+    {l:'(−) Cuota banco',k:'cuota'},{l:'(−) IR',k:'ir'},{l:'FLUJO NETO',k:'flujo'},{l:'Saldo final acumulado',k:'saldoFin'}
+  ];
+  var html = '';
+  for (var i = 0; i < conceptos.length; i++) {
+    var c = conceptos[i];
+    var isTotal = c.k === 'flujo' || c.k === 'saldoFin';
+    html += '<tr style="' + (isTotal ? 'background:rgba(232,160,32,.05);font-weight:700' : '') + '">' +
+      '<td style="font-size:12px;white-space:nowrap;color:' + (isTotal ? 'var(--gold)' : 'var(--text)') + '">' + c.l + '</td>' +
+      flujoCache.map(function(m) {
+        var v = m[c.k] || 0;
+        return '<td class="mono" style="font-size:11px;color:' + (v < 0 ? '#E87070' : isTotal ? 'var(--gold)' : 'var(--muted)') + '">S/' + v.toLocaleString('es-PE',{maximumFractionDigits:0}) + '</td>';
+      }).join('') + '</tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+function renderPE() {
+  if (!eerrCache.length) { return; }
+  var ventas = parseFloat(document.getElementById('p-ventas') ? document.getElementById('p-ventas').value : 80) || 80;
+  var ticket = parseFloat(document.getElementById('p-ticket') ? document.getElementById('p-ticket').value : 23) || 23;
+  var cvPct = parseFloat(document.getElementById('p-cv') ? document.getElementById('p-cv').value : 42) || 42;
+  var m0 = eerrCache[0];
+  var fijos = [{c:'Planilla (costo total)',t:'Fijo',m:m0.plan},{c:'Alquiler',t:'Fijo',m:m0.alq},{c:'Servicios',t:'Fijo',m:m0.serv},{c:'Publicidad',t:'Fijo',m:m0.pub},{c:'Otros gastos',t:'Fijo',m:m0.otros},{c:'Depreciación',t:'Fijo',m:m0.dep},{c:'Gastos financieros',t:'Fijo',m:m0.cuota}];
+  var totalFijos = fijos.reduce(function(s, f) { return s + f.m; }, 0);
+  var mc = 1 - cvPct / 100;
+  var peSoles = totalFijos / mc;
+  var peUndMes = peSoles / ticket;
+  var peUndDia = peUndMes / 30;
+  var ventasMes = ventas * 30;
+  var seg = ((ventasMes - peUndMes) / ventasMes * 100).toFixed(1);
+  var e;
+  e = document.getElementById('pe-und'); if (e) { e.textContent = peUndDia.toFixed(0) + ' und/día'; }
+  e = document.getElementById('pe-soles'); if (e) { e.textContent = fmt(peSoles); }
+  e = document.getElementById('pe-seg'); if (e) { e.textContent = parseFloat(seg) > 0 ? seg + '%' : '<0%'; e.style.color = parseFloat(seg) > 0 ? 'var(--green-l)' : '#E87070'; }
+  var tbody = document.getElementById('pe-tbody');
+  var tfoot = document.getElementById('pe-tfoot');
+  if (tbody) {
+    tbody.innerHTML = fijos.map(function(f) {
+      return '<tr><td>' + f.c + '</td><td><span style="background:rgba(232,160,32,.15);color:var(--gold);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">' + f.t + '</span></td><td class="gold mono">S/ ' + f.m.toFixed(2) + '</td></tr>';
+    }).join('');
+  }
+  if (tfoot) { tfoot.innerHTML = '<tr><td colspan="2">TOTAL COSTOS FIJOS</td><td>S/ ' + totalFijos.toFixed(2) + '</td></tr>'; }
+}
+
+function exportEERRCSV() {
+  if (!eerrCache.length) { showToast('⚠️ Sin datos — vaya al EERR primero', 'error'); return; }
+  var rows = [['Concepto','Ene','Feb','Mar','Abr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dic','Total']];
+  var ks = ['ing','cv','gb','plan','alq','serv','pub','otros','ebitda','dep','ebit','cuota','eai','ir','un'];
+  var ls = ['Ingresos','CV','Util.Bruta','Planilla','Alquiler','Servicios','Publi','Otros','EBITDA','Deprec','EBIT','G.Fin','Util.AntIR','IR','Util.Neta'];
+  for (var i = 0; i < ks.length; i++) {
+    var k = ks[i];
+    var l = ls[i];
+    var vals = eerrCache.map(function(m) { return (m[k] || 0).toFixed(2); });
+    var tot = eerrCache.reduce(function(s, m) { return s + (m[k] || 0); }, 0);
+    rows.push([l].concat(vals).concat([tot.toFixed(2)]));
+  }
+  downloadCSV(rows, 'MAE_EERR.csv');
+}
+
+function exportFlujoCSV() {
+  if (!flujoCache.length) { showToast('⚠️ Sin datos', 'error'); return; }
+  var rows = [['Concepto','Ene','Feb','Mar','Abr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dic']];
+  var ks = ['saldoIni','ing','egre','cuota','ir','flujo','saldoFin'];
+  var ls = ['Saldo inicial','Ingresos','Egresos','Cuota','IR','Flujo neto','Saldo final'];
+  for (var i = 0; i < ks.length; i++) {
+    var k = ks[i];
+    rows.push([ls[i]].concat(flujoCache.map(function(m) { return (m[k] || 0).toFixed(2); })));
+  }
+  downloadCSV(rows, 'MAE_Flujo.csv');
+}
+
+// ══════════════════════════════════════════════════════
+//  KPIs
+// ══════════════════════════════════════════════════════
+
+function recalcKPIs() {
+  if (!eerrCache.length) { recalcEERR(); return; }
+  var inversion = 114899;
+  var totalUtil = eerrCache.reduce(function(s, m) { return s + m.un; }, 0);
+  var roi = (totalUtil / inversion * 100).toFixed(1);
+  var acum = 0, payback = 0;
+  for (var i = 0; i < eerrCache.length; i++) { acum += eerrCache[i].un; if (acum >= 0 && !payback) { payback = i + 1; } }
+  var van = eerrCache.reduce(function(s, m, i) { return s + m.un / Math.pow(1.01, i + 1); }, 0) - inversion;
+  var m0 = eerrCache[0];
+  var mb = (m0.gb / m0.ing * 100).toFixed(1);
+  var e;
+  e = document.getElementById('kpi-roi'); if (e) { e.textContent = roi + '%'; e.style.color = parseFloat(roi) > 0 ? 'var(--green-l)' : '#E87070'; }
+  e = document.getElementById('kpi-payback'); if (e) { e.textContent = (payback || '>12') + ' meses'; }
+  e = document.getElementById('kpi-van'); if (e) { e.textContent = fmt(van); e.style.color = van > 0 ? 'var(--green-l)' : '#E87070'; }
+  e = document.getElementById('kpi-tir'); if (e) { e.textContent = '~' + (totalUtil / inversion * 100 / 12).toFixed(1) + '% mensual'; }
+  e = document.getElementById('kpi-mb'); if (e) { e.textContent = mb + '%'; }
+  e = document.getElementById('kpi-ebitda'); if (e) { e.textContent = fmt(m0.ebitda); }
+  var ratios = [
+    {r:'Margen Bruto',f:'Util. Bruta / Ingresos',v:mb+'%',b:'>55%',ok:parseFloat(mb)>55},
+    {r:'Margen Neto',f:'Util. Neta / Ingresos',v:(m0.un/m0.ing*100).toFixed(1)+'%',b:'>10%',ok:m0.un/m0.ing>0.10},
+    {r:'ROI Anual',f:'Util. Anual / Inversión',v:roi+'%',b:'>20%',ok:parseFloat(roi)>20},
+    {r:'Ratio Deuda/Capital',f:'Pasivo / Patrimonio',v:(34470/80429).toFixed(2),b:'<1.0',ok:34470/80429<1},
+    {r:'Cobertura Interés',f:'EBIT / G. Financieros',v:(m0.ebit/m0.cuota).toFixed(1)+'x',b:'>1.5x',ok:m0.ebit/m0.cuota>1.5}
+  ];
+  var tbody = document.getElementById('kpi-tbody');
+  if (tbody) {
+    tbody.innerHTML = ratios.map(function(r) {
+      return '<tr><td style="font-weight:600">' + r.r + '</td><td class="mono dim">' + r.f + '</td>' +
+        '<td class="gold mono">' + r.v + '</td><td class="mono">' + r.b + '</td>' +
+        '<td>' + (r.ok ? '<span style="color:var(--green-l)">🟢 OK</span>' : '<span style="color:#E87070">🔴 Revisar</span>') + '</td></tr>';
+    }).join('');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  ACTUALIZAR showPage CON FASE 2
+// ══════════════════════════════════════════════════════
+
+var _origShowPage = showPage;
+showPage = function(pageId) {
+  _origShowPage(pageId);
+  if (pageId === 'esf') { renderESF(); }
+  if (pageId === 'ecommerce') { renderPOSGrid(); renderCart(); }
+  if (pageId === 'inventario') { renderInventario(); }
+  if (pageId === 'facturacion') { updateFacNum(); renderFacItems(); var fd = document.getElementById('fac-fecha'); if (fd && !fd.value) { fd.value = new Date().toISOString().split('T')[0]; } }
+  if (pageId === 'eerr') { recalcEERR(); }
+  if (pageId === 'kpis') { recalcKPIs(); }
+};
+
+// ══════════════════════════════════════════════════════
+//  ACTUALIZAR DASHBOARD CON FASE 2
+// ══════════════════════════════════════════════════════
+
+var _origRenderDashboard = renderDashboard;
+renderDashboard = function() {
+  _origRenderDashboard();
+  var modulos = [
+    {name:'Dashboard',pct:100,color:'#28A745'},
+    {name:'Activos Tangibles',pct:100,color:'#28A745'},
+    {name:'Activos Intangibles',pct:100,color:'#28A745'},
+    {name:'Planilla Laboral',pct:100,color:'#28A745'},
+    {name:'Financiamiento',pct:100,color:'#28A745'},
+    {name:'ESF / Balance',pct:100,color:'#28A745'},
+    {name:'Ecommerce + POS',pct:100,color:'#28A745'},
+    {name:'Inventario / Kardex',pct:100,color:'#28A745'},
+    {name:'Facturación SUNAT',pct:100,color:'#28A745'},
+    {name:'EERR + Flujo de Caja',pct:100,color:'#28A745'},
+    {name:'KPIs Financieros',pct:100,color:'#28A745'}
+  ];
+  var html = '';
+  for (var i = 0; i < modulos.length; i++) {
+    var m = modulos[i];
+    html += '<div class="prog-item"><span class="prog-label">' + m.name + '</span>' +
+      '<div class="prog-bar-wrap"><div class="prog-bar" style="width:' + m.pct + '%;background:' + m.color + '"></div></div>' +
+      '<span class="prog-val">' + m.pct + '%</span></div>';
+  }
+  var el = document.getElementById('modulos-progress');
+  if (el) { el.innerHTML = html; }
+  var nav = document.querySelectorAll('.nav-badge.soon');
+  for (var j = 0; j < nav.length; j++) { nav[j].className = 'nav-badge ok'; nav[j].textContent = 'OK'; }
+};
+
+
+
+function imprimirTicket() {
+  if (ventasHistorial.length === 0) { showToast('⚠️ Sin ventas registradas', 'error'); return; }
+  window.print();
+}
+
+function downloadCSV(rows, filename) {
+  var csv = rows.map(function(r) {
+    return r.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(',');
+  }).join('\n');
+  var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📤 ' + filename + ' descargado', 'success');
+}
+
+// ══════════════════════════════════════════════════════
+//  INICIALIZACIÓN
+// ══════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderDashboard();
+  calcAmortizacion();
+});
+
+</script>
+</body>
+</html>
